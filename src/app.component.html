@@ -1,51 +1,103 @@
-<div class="flex h-screen bg-slate-900">
-  <!-- Sidebar Navigation -->
-  <aside class="w-20 bg-slate-50 flex flex-col items-center py-4 space-y-4 border-r border-slate-200">
-    <div class="text-green-600 font-bold text-lg">GF</div>
-    <nav class="flex flex-col items-center space-y-2 mt-8 w-full">
-      @for (item of navItems; track item.id) {
-        <button 
-          (click)="changeTab(item.id)"
-          class="p-3 rounded-lg transition-colors duration-200 w-full relative group"
-          [class]="activeTab() === item.id ? 'bg-green-100 text-green-700' : 'text-slate-500 hover:bg-green-50 hover:text-green-600'"
-          [title]="item.label">
-          @if (activeTab() === item.id) {
-            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-green-500 rounded-r-full"></div>
-          }
-          <div class="mx-auto" [innerHTML]="item.icon | safeHtml">
+@if (isInitializing()) {
+  <div class="fixed inset-0 bg-slate-900 flex flex-col items-center justify-center z-50">
+    <div class="text-green-500 font-bold text-4xl animate-pulse">GF</div>
+    <div class="mt-4 text-slate-400">Initializing Game...</div>
+  </div>
+} @else {
+  @switch (authStatus()) {
+    @case ('loading') {
+      <div class="fixed inset-0 bg-slate-900 flex flex-col items-center justify-center z-50">
+        <div class="text-green-500 font-bold text-4xl animate-pulse">GF</div>
+        <div class="mt-4 text-slate-400">Authenticating...</div>
+      </div>
+    }
+    @case ('unauthenticated') {
+      <auth-page />
+    }
+    @case ('authenticated') {
+      @if(gameStateService.loading()) {
+        <div class="fixed inset-0 bg-slate-900 flex flex-col items-center justify-center z-50">
+          <div class="text-green-500 font-bold text-4xl animate-pulse">GF</div>
+          <div class="mt-4 text-slate-400">Loading your farm...</div>
+          <div class="mt-2 w-32 h-2 bg-slate-700 rounded-full overflow-hidden">
+              <div class="h-full bg-green-500 animate-loading-bar"></div>
           </div>
-        </button>
-      }
-    </nav>
-  </aside>
+        </div>
+      } @else {
+        <div class="flex h-screen bg-slate-900">
+          <!-- Sidebar Navigation -->
+          <aside class="w-20 bg-slate-50 flex flex-col items-center py-4 space-y-4 border-r border-slate-200">
+            <div class="text-green-600 font-bold text-lg">GF</div>
+            <nav class="flex flex-col items-center space-y-2 mt-8 w-full flex-grow">
+              @for (item of navItems(); track item.id) {
+                <button 
+                  (click)="changeTab(item.id)"
+                  class="p-3 rounded-lg transition-colors duration-200 w-full relative group"
+                  [class]="activeTab() === item.id ? 'bg-green-100 text-green-700' : 'text-slate-500 hover:bg-green-50 hover:text-green-600'"
+                  [title]="item.label">
+                  @if (activeTab() === item.id) {
+                    <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-green-500 rounded-r-full"></div>
+                  }
+                  <div class="mx-auto" [innerHTML]="item.icon | safeHtml">
+                  </div>
+                </button>
+              }
+            </nav>
 
-  <!-- Main Content -->
-  <main class="flex-1 overflow-auto bg-slate-900">
-    @switch (activeTab()) {
-      @case ('Farm') {
-        <farm-page />
-      }
-      @case ('Shop') {
-        <shop-page />
-      }
-      @case ('Inventory') {
-        <inventory-page />
-      }
-      @case ('Production') {
-        <production-page />
-      }
-      @case ('Tasks') {
-        <tasks-page />
-      }
-      @case ('Community') {
-        <community-page />
-      }
-      @case ('Management') {
-        <management-page />
+            <!-- Logout Button -->
+            <div class="w-full px-2">
+              <button 
+                (click)="logout()"
+                class="p-3 rounded-lg transition-colors duration-200 w-full relative group text-slate-500 hover:bg-red-50 hover:text-red-600"
+                title="Logout">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+              </button>
+            </div>
+          </aside>
+
+          <!-- Main Content -->
+          <main class="flex-1 overflow-auto bg-slate-900">
+            @switch (activeTab()) {
+              @case ('Farm') {
+                <farm-page />
+              }
+              @case ('Shop') {
+                <shop-page />
+              }
+              @case ('Inventory') {
+                <inventory-page />
+              }
+              @case ('Production') {
+                <production-page />
+              }
+              @case ('Tasks') {
+                <tasks-page />
+              }
+              @case ('Community') {
+                <community-page />
+              }
+              @case ('Admin Panel') {
+                <management-page />
+              }
+            }
+          </main>
+          
+          <!-- Global Overlays / Tickers -->
+          <app-market-ticker></app-market-ticker>
+        </div>
       }
     }
-  </main>
-  
-  <!-- Global Overlays / Tickers -->
-  <app-market-ticker></app-market-ticker>
-</div>
+  }
+}
+
+<style>
+  @keyframes loading-bar {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  .animate-loading-bar {
+    animation: loading-bar 1.5s ease-in-out infinite;
+  }
+</style>

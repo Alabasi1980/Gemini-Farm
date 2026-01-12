@@ -1,62 +1,115 @@
 <div class="p-8">
-  <h1 class="text-3xl font-bold text-slate-300 mb-6">Management</h1>
-
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-    <!-- Workers Panel -->
-    <div class="lg:col-span-2">
-      <h2 class="text-2xl font-semibold mb-4 text-cyan-300">Automated Workers</h2>
-      <div class="space-y-4">
-        @for(worker of workers(); track worker.id) {
-          <div class="bg-slate-800 border border-slate-700 rounded-lg p-4 flex items-center justify-between">
-            <div class="flex items-center space-x-4">
-              <span class="text-5xl">{{ worker.asset }}</span>
-              <div>
-                <h3 class="text-xl font-bold text-white">{{ worker.name }}</h3>
-                <p class="text-sm" [class]="worker.active ? 'text-green-400' : 'text-slate-400'">
-                  Status: <span class="font-semibold">{{ worker.active ? worker.status : 'Inactive' }}</span>
-                </p>
-              </div>
-            </div>
-
-            <!-- Toggle Switch -->
-            <div class="flex items-center space-x-3">
-              <span class="text-sm font-medium" [class]="worker.active ? 'text-white' : 'text-slate-500'">
-                {{ worker.active ? 'Active' : 'Inactive' }}
-              </span>
-              <button 
-                (click)="toggleWorker(worker.id)"
-                class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors"
-                [class]="worker.active ? 'bg-green-600' : 'bg-slate-600'">
-                <span
-                  class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform"
-                  [class]="worker.active ? 'translate-x-6' : 'translate-x-1'"></span>
-              </button>
-            </div>
-          </div>
-        }
-      </div>
-    </div>
-
-    <!-- Action Log Panel -->
-    <div>
-      <h2 class="text-2xl font-semibold mb-4 text-purple-300">Action Log</h2>
-      <div class="bg-slate-800 border border-slate-700 rounded-lg p-4 h-96 flex flex-col-reverse">
-        @if (logs().length === 0) {
-          <div class="text-center text-slate-500 m-auto">
-            <p>No actions recorded yet.</p>
-            <p class="text-xs">Activate a worker to see their actions here.</p>
-          </div>
-        } @else {
-          <div class="space-y-2 overflow-y-auto">
-            @for (log of logs(); track log.timestamp) {
-              <div class="text-sm animate-fade-in-down">
-                <span class="text-slate-500 mr-2">{{ log.timestamp | date:'HH:mm:ss' }}</span>
-                <span class="text-slate-300">{{ log.message }}</span>
-              </div>
-            }
-          </div>
-        }
-      </div>
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-3xl font-bold text-slate-300">Admin Panel</h1>
+    <div class="flex space-x-2 bg-slate-800 p-1 rounded-lg">
+      <button 
+        (click)="activeView.set('players')"
+        class="px-4 py-2 text-sm font-semibold rounded-md transition-colors"
+        [class]="activeView() === 'players' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:bg-slate-700'">
+        Player Management
+      </button>
+      <button 
+        (click)="activeView.set('content')"
+        class="px-4 py-2 text-sm font-semibold rounded-md transition-colors"
+        [class]="activeView() === 'content' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:bg-slate-700'">
+        Content Management
+      </button>
     </div>
   </div>
+
+  @if(activeView() === 'players') {
+    @if (loading()) {
+      <div class="text-center py-20 bg-slate-800/50 rounded-lg">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-400 mx-auto"></div>
+        <p class="mt-4 text-slate-300 font-semibold">Loading player data...</p>
+      </div>
+    } @else if (error()) {
+      <div class="text-center py-12 bg-red-900/50 border border-red-700 rounded-lg">
+        <p class="text-red-300 font-bold text-lg">Error</p>
+        <p class="mt-2 text-red-400">{{ error() }}</p>
+      </div>
+    } @else {
+      <div class="bg-slate-800 border border-slate-700 rounded-lg shadow-lg overflow-hidden">
+        <table class="min-w-full divide-y divide-slate-700">
+          <thead class="bg-slate-900/50">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Player</th>
+              <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-slate-400 uppercase tracking-wider">Level</th>
+              <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">Coins</th>
+              <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">XP</th>
+              <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-slate-400 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-700/50">
+            @for (player of players(); track player.uid) {
+              <tr class="hover:bg-slate-700/30 transition-colors duration-150">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm font-medium text-white">{{ player.email }}</div>
+                  <div class="text-xs text-slate-400">{{ player.uid }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center">
+                  <span class="bg-yellow-500/20 text-yellow-300 font-bold text-sm px-3 py-1 rounded-full border border-yellow-500/50">
+                    {{ player.playerState.level }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right font-mono text-yellow-300">{{ player.playerState.coins | number }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-right font-mono text-blue-300">{{ player.playerState.xp | number }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                  <div class="flex items-center justify-center space-x-2">
+                    <button (click)="openModal(player, 'coins')" class="text-yellow-400 hover:text-yellow-300 transition-colors" title="Give Coins">
+                      💰 Add
+                    </button>
+                    <button (click)="openModal(player, 'xp')" class="text-blue-400 hover:text-blue-300 transition-colors" title="Give XP">
+                      ⭐ Add
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  } @else {
+    <app-content-management></app-content-management>
+  }
 </div>
+
+<!-- Add Amount Modal -->
+@if (isModalOpen() && selectedPlayer(); as player) {
+  <div class="fixed inset-0 bg-black/60 z-30 flex items-center justify-center" (click)="closeModal()">
+    <div class="bg-slate-800 border-2 border-slate-600 rounded-lg p-6 shadow-2xl animate-scale-in text-center w-full max-w-sm" (click)="$event.stopPropagation()">
+      <h2 class="text-2xl font-bold text-slate-200">
+        Give {{ modalMode() === 'coins' ? 'Coins' : 'XP' }} to <span class="text-green-400">{{ player.email }}</span>
+      </h2>
+      <p class="text-slate-400 mt-2">Enter the amount to add to the player's account.</p>
+      
+      <div class="my-6">
+        <label for="amount" class="block text-sm font-medium text-slate-300 mb-2">Amount to Add</label>
+        <input 
+          id="amount" 
+          type="number"
+          [ngModel]="amountToAdd()"
+          (ngModelChange)="amountToAdd.set($event)"
+          class="w-full text-center px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 text-2xl font-bold"
+          placeholder="e.g., 1000">
+      </div>
+
+      <div class="flex space-x-4">
+        <button (click)="closeModal()" class="w-full px-6 py-3 rounded-lg font-bold bg-slate-600 hover:bg-slate-700 text-white transition-colors">
+          Cancel
+        </button>
+        <button 
+          (click)="confirmAction()"
+          [disabled]="amountToAdd() <= 0"
+          class="w-full px-6 py-3 rounded-lg font-bold text-white transition-colors duration-200"
+          [class]="amountToAdd() > 0 ? 'bg-green-600 hover:bg-green-700' : 'bg-slate-600 cursor-not-allowed'">
+          Confirm
+        </button>
+      </div>
+       @if (amountToAdd() <= 0) {
+        <p class="text-red-400 text-sm mt-3">Amount must be greater than zero.</p>
+      }
+    </div>
+  </div>
+}

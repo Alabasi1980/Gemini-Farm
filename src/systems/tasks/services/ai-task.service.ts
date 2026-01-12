@@ -63,7 +63,7 @@ ${JSON.stringify(context, null, 2)}
                     systemInstruction,
                     responseMimeType: 'application/json',
                     responseSchema: this.responseSchema,
-                    thinkingConfig: { thinkingBudget: 32768 }
+                    thinkingConfig: { thinkingBudget: 24576 }
                 }
             });
 

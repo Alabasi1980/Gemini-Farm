@@ -4,10 +4,7 @@ import { GameStateService } from '../../player/services/game-state.service';
 import { ObjectService } from './object.service';
 import { PlacementService } from './placement.service';
 import { GameClockService } from '../../world/services/game-clock.service';
-
-const ANIMAL_PRODUCTS_DATA: AnimalProduct[] = [
-    { id: 'egg', name: 'Egg', sellPrice: 12, asset: '🥚' }
-];
+import { ContentService } from '../../../shared/services/content.service';
 
 @Injectable({ providedIn: 'root' })
 export class AnimalService {
@@ -15,8 +12,11 @@ export class AnimalService {
     private placementService = inject(PlacementService);
     private objectService = inject(ObjectService);
     private gameClockService = inject(GameClockService);
+    private contentService = inject(ContentService);
 
-    private products = new Map<string, AnimalProduct>(ANIMAL_PRODUCTS_DATA.map(p => [p.id, p]));
+    private products = computed(() => {
+        return new Map<string, AnimalProduct>(this.contentService.animalProducts().map(p => [p.id, p]));
+    });
     
     productionStates = signal<Map<number, AnimalBuildingState>>(new Map());
 
@@ -67,11 +67,11 @@ export class AnimalService {
     }
 
     getProduct(id: string): AnimalProduct | undefined {
-        return this.products.get(id);
+        return this.products().get(id);
     }
     
     getAllProducts(): AnimalProduct[] {
-        return Array.from(this.products.values());
+        return Array.from(this.products().values());
     }
 
     collect(instanceId: number) {

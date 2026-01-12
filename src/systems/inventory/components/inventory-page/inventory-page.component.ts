@@ -30,11 +30,14 @@ export class InventoryPageComponent {
   currentStorage = this.gameStateService.currentStorage;
 
   inventoryItems = computed<DisplayItem[]>(() => {
-    const inventory = this.playerState().inventory;
+    const state = this.playerState();
+    if (!state) return [];
+    
+    const inventory = state.inventory;
     this.marketService.priceModifiers(); // Depend on this signal to recompute on market update
     
     const items: DisplayItem[] = [];
-    for (const [itemId, quantity] of inventory.entries()) {
+    for (const [itemId, quantity] of Object.entries(inventory)) {
       const itemData = this.itemService.getItem(itemId);
       if (itemData) {
         const basePrice = itemData.sellPrice;

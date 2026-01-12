@@ -1,0 +1,148 @@
+<div class="space-y-4">
+  <div class="flex justify-between items-center">
+    <h2 class="text-2xl font-semibold text-slate-400">Crop Definitions</h2>
+    <button (click)="openForm()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-colors">
+      Create New Crop
+    </button>
+  </div>
+
+  <div class="bg-slate-800 border border-slate-700 rounded-lg shadow-lg overflow-hidden">
+    <table class="min-w-full divide-y divide-slate-700">
+      <thead class="bg-slate-900/50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">ID</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Name</th>
+          <th class="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">Cost</th>
+          <th class="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">Sell Price</th>
+          <th class="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">Growth (s)</th>
+          <th class="px-6 py-3 text-center text-xs font-medium text-slate-400 uppercase tracking-wider">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-700/50">
+        @for (crop of crops(); track crop.id) {
+          <tr class="hover:bg-slate-700/30 transition-colors duration-150">
+            <td class="px-6 py-4 whitespace-nowrap font-mono text-sm text-slate-300">{{ crop.id }}</td>
+            <td class="px-6 py-4 whitespace-nowrap font-semibold text-white">{{ crop.name }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-right font-mono text-yellow-400">{{ crop.plantCost | number }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-right font-mono text-green-400">{{ crop.sellPrice | number }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-right font-mono text-blue-400">{{ crop.growthTime / 1000 | number:'1.0-1' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-center">
+              <button (click)="openForm(crop)" class="text-blue-400 hover:text-blue-300 transition-colors">Edit</button>
+            </td>
+          </tr>
+        } @empty {
+           <tr>
+             <td colspan="6" class="text-center py-8 text-slate-400">No crops found in the database. Create one to get started!</td>
+           </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Crop Form Modal -->
+@if(isFormOpen()) {
+  <div class="fixed inset-0 bg-black/70 z-30 flex items-center justify-center" (click)="closeForm()">
+    <div class="bg-slate-800 border-2 border-slate-600 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col" (click)="$event.stopPropagation()">
+      <h2 class="text-2xl font-bold text-slate-200 p-6 border-b border-slate-700">
+        {{ editingCrop() ? 'Edit Crop' : 'Create New Crop' }}
+      </h2>
+      <form [formGroup]="cropForm" (ngSubmit)="onSubmit()" class="flex-grow overflow-y-auto p-6 space-y-4">
+        
+        <!-- Basic Info -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-300 mb-1">ID (lowercase_snake_case)</label>
+            <input formControlName="id" [readOnly]="editingCrop()" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white read-only:bg-slate-800">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-300 mb-1">Name</label>
+            <input formControlName="name" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white">
+          </div>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-slate-300 mb-1">Description</label>
+            <textarea formControlName="description" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white" rows="2"></textarea>
+        </div>
+
+        <!-- Financial Info -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-slate-300 mb-1">Plant Cost</label>
+                <input type="number" formControlName="plantCost" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-300 mb-1">Sell Price</label>
+                <input type="number" formControlName="sellPrice" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white">
+            </div>
+             <div>
+                <label class="block text-sm font-medium text-slate-300 mb-1">Growth Time (seconds)</label>
+                <input type="number" formControlName="growthTime" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-300 mb-1">Unlock Level</label>
+                <input type="number" formControlName="unlockLevel" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white">
+            </div>
+        </div>
+        
+        <!-- Tags -->
+        <div>
+            <label class="block text-sm font-medium text-slate-300 mb-1">Balance Tags (comma-separated)</label>
+            <input formControlName="balanceTags" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white">
+        </div>
+
+        <!-- Season Modifiers -->
+        <div class="p-4 bg-slate-900/50 rounded-lg" formGroupName="seasonModifiers">
+            <h3 class="font-semibold text-slate-300 mb-2">Season Growth Modifiers (1.0 = normal)</h3>
+            <div class="grid grid-cols-4 gap-4">
+                 <div>
+                    <label class="block text-xs text-slate-400 mb-1">Spring</label>
+                    <input type="number" step="0.1" formControlName="Spring" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white">
+                </div>
+                 <div>
+                    <label class="block text-xs text-slate-400 mb-1">Summer</label>
+                    <input type="number" step="0.1" formControlName="Summer" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white">
+                </div>
+                 <div>
+                    <label class="block text-xs text-slate-400 mb-1">Autumn</label>
+                    <input type="number" step="0.1" formControlName="Autumn" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white">
+                </div>
+                 <div>
+                    <label class="block text-xs text-slate-400 mb-1">Winter</label>
+                    <input type="number" step="0.1" formControlName="Winter" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Growth Stages -->
+        <div class="p-4 bg-slate-900/50 rounded-lg" formArrayName="growthStages">
+            <div class="flex justify-between items-center mb-2">
+                 <h3 class="font-semibold text-slate-300">Growth Stages</h3>
+                 <button type="button" (click)="addGrowthStage()" class="px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 rounded">Add Stage</button>
+            </div>
+            <div class="space-y-2">
+                @for(stage of growthStages.controls; track $index) {
+                    <div [formGroupName]="$index" class="grid grid-cols-10 gap-2 items-center">
+                        <input formControlName="asset" placeholder="Asset (e.g., 🌱)" class="col-span-4 bg-slate-700 border border-slate-600 rounded p-2 text-white">
+                        <label class="col-span-3 text-sm text-slate-400 text-right">Ends at %</label>
+                        <input type="number" formControlName="endAtPercent" class="col-span-2 bg-slate-700 border border-slate-600 rounded p-2 text-white">
+                        <button type="button" (click)="removeGrowthStage($index)" class="col-span-1 text-red-500 hover:text-red-400">
+                            &times;
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+
+      </form>
+      <div class="p-4 bg-slate-900/50 border-t border-slate-700 flex justify-end space-x-4">
+        <button (click)="closeForm()" class="px-6 py-2 rounded-lg font-bold bg-slate-600 hover:bg-slate-700 text-white transition-colors">
+          Cancel
+        </button>
+        <button (click)="onSubmit()" [disabled]="cropForm.invalid" class="px-6 py-2 rounded-lg font-bold bg-green-600 hover:bg-green-700 text-white transition-colors disabled:bg-slate-600 disabled:cursor-not-allowed">
+          Save Crop
+        </button>
+      </div>
+    </div>
+  </div>
+}

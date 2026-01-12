@@ -5,7 +5,7 @@ export interface PlayerState {
   storage: {
     max: number;
   };
-  inventory: Map<string, number>;
+  inventory: { [itemId: string]: number };
   expansionsPurchased: number;
 }
 
@@ -30,13 +30,17 @@ export type Season = 'Spring' | 'Summer' | 'Autumn' | 'Winter';
 export type Weather = 'Sunny' | 'Cloudy' | 'Rainy' | 'Snowy' | 'Windy' | 'Stormy';
 
 export interface Crop {
+  // FIX: `id` is always present on client-side Crop objects. Making it required simplifies type checks.
   id: string;
   name: string;
+  description: string;
   plantCost: number;
   sellPrice: number;
   growthTime: number; // total ms for full growth
   growthStages: CropGrowthStage[];
   seasonModifiers: Partial<Record<Season, number>>;
+  unlockLevel: number;
+  balanceTags: string[]; // e.g., ['common', 'fast_grow']
 }
 
 // Object types
@@ -45,11 +49,13 @@ export type ObjectType = 'decoration' | 'building' | 'animal_housing' | 'factory
 export interface PlaceableItem {
   id: string;
   name: string;
+  description: string;
   type: ObjectType;
   cost: number;
   width: number; // in grid cells
   height: number; // in grid cells
   asset: string; // emoji
+  unlockLevel: number;
   // Optional properties for specific types
   producesProductId?: string;
   productionTime?: number; // ms
@@ -70,8 +76,10 @@ export interface FarmObject {
 export interface AnimalProduct {
   id: string;
   name: string;
+  description: string;
   sellPrice: number;
   asset: string; // emoji
+  unlockLevel: number;
 }
 
 export interface AnimalBuildingState {
@@ -83,17 +91,21 @@ export interface AnimalBuildingState {
 export interface Recipe {
     id:string;
     name: string;
+    description: string;
     duration: number; // ms
-    inputs: Map<string, number>; // itemId -> quantity
+    inputs: { [itemId: string]: number };
     outputId: string;
     outputQuantity: number;
+    unlockLevel: number;
 }
 
 export interface ProcessedGood {
     id: string;
     name: string;
+    description: string;
     sellPrice: number;
     asset: string;
+    unlockLevel: number;
 }
 
 export interface ProductionJob {
@@ -180,4 +192,10 @@ export interface DisplayItem {
     sellPrice: number;
     asset: string;
     quantity: number;
+}
+
+// --- Database Document Type ---
+export interface GameDataDocument {
+    playerState: PlayerState;
+    // Add other systems to save here later, e.g., farm, production
 }

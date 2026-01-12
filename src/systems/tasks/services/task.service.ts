@@ -20,7 +20,10 @@ export class TaskService {
     constructor() {
         // Effect to update task progress when player inventory or tasks change
         effect(() => {
-            const inventory = this.gameStateService.state().inventory;
+            const state = this.gameStateService.state();
+            if (!state) return;
+
+            const inventory = state.inventory;
             const currentTasks = this.tasks();
 
             this.taskStates.update(currentStates => {
@@ -32,7 +35,7 @@ export class TaskService {
                     if (!currentState || currentState.claimed) continue;
 
                     if (task.type === 'INVENTORY') {
-                        const newProgress = (inventory.get(task.targetItemId) as number) || 0;
+                        const newProgress = inventory[task.targetItemId] || 0;
                         if (currentState.progress !== newProgress || !currentState.completed) {
                            const updatedProgress = Math.min(newProgress, task.targetQuantity);
                            const isCompleted = updatedProgress >= task.targetQuantity;
@@ -67,14 +70,17 @@ export class TaskService {
         this.loading.set(true);
         this.error.set(null);
         this.tasks.set([]);
+        
+        const playerState = this.gameStateService.state();
+        if (!playerState) {
+            this.error.set("Player data not loaded yet.");
+            this.loading.set(false);
+            return;
+        }
 
         try {
             // 1. Gather Context
-            const playerState = this.gameStateService.state();
-            const inventoryObject: { [key: string]: number } = {};
-            playerState.inventory.forEach((value, key) => {
-                inventoryObject[key] = value;
-            });
+            const inventoryObject = playerState.inventory;
 
             const ownedFactories = this.placementService.placedObjects()
                 .map(obj => this.objectService.getItem(obj.itemId))
@@ -112,11 +118,14 @@ export class TaskService {
             return;
         }
 
-        this.gameStateService.state.update(s => ({
-            ...s,
-            coins: s.coins + task.reward.coins,
-            xp: s.xp + task.reward.xp,
-        }));
+        this.gameStateService.state.update(s => {
+            if (!s) return null;
+            return {
+                ...s,
+                coins: s.coins + task.reward.coins,
+                xp: s.xp + task.reward.xp,
+            }
+        });
         
         this.taskStates.update(states => {
             const newStates = new Map(states);

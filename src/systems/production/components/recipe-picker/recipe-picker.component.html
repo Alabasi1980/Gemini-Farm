@@ -26,11 +26,11 @@
           
           <!-- Inputs -->
           <div class="flex items-center justify-end space-x-4 w-1/3">
-            @for (input of recipe.inputs.entries(); track input[0]) {
+            @for (input of recipe.inputs | keyvalue; track input.key) {
               <div class="flex flex-col items-center">
-                <span class="text-3xl">{{ getIngredientAsset(input[0]) }}</span>
-                <span class="text-xs font-semibold" [class]="(gameStateService.state().inventory.get(input[0]) || 0) >= input[1] ? 'text-slate-300' : 'text-red-400'">
-                  {{ gameStateService.state().inventory.get(input[0]) || 0 }}/{{ input[1] }}
+                <span class="text-3xl">{{ getIngredientAsset(input.key) }}</span>
+                <span class="text-xs font-semibold" [class]="(playerInventory()[input.key] || 0) >= input.value ? 'text-slate-300' : 'text-red-400'">
+                  {{ playerInventory()[input.key] || 0 }}/{{ input.value }}
                 </span>
               </div>
             }

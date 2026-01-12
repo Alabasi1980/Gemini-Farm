@@ -6,6 +6,7 @@ import { ObjectService } from '../../../farm/services/object.service';
 import { ItemService } from '../../../../shared/services/item.service';
 import { Recipe } from '../../../../shared/types/game.types';
 import { PlacementService } from '../../../farm/services/placement.service';
+import { KeyValuePipe } from '../../../../shared/pipes/keyvalue.pipe';
 
 interface RecipeDisplayData extends Recipe {
     canAfford: boolean;
@@ -15,7 +16,7 @@ interface RecipeDisplayData extends Recipe {
 @Component({
   selector: 'app-recipe-picker',
   templateUrl: './recipe-picker.component.html',
-  imports: [CommonModule],
+  imports: [CommonModule, KeyValuePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RecipePickerComponent {
@@ -30,6 +31,8 @@ export class RecipePickerComponent {
   itemService = inject(ItemService);
   placementService = inject(PlacementService);
 
+  playerInventory = computed(() => this.gameStateService.state()?.inventory ?? {});
+
   factoryItem = computed(() => {
     const farmObject = this.placementService.placedObjects().find(o => o.instanceId === this.factoryInstanceId());
     return farmObject ? this.objectService.getItem(farmObject.itemId) : undefined;
@@ -37,14 +40,14 @@ export class RecipePickerComponent {
 
   availableRecipes = computed<RecipeDisplayData[]>(() => {
     const item = this.factoryItem();
-    const playerInventory = this.gameStateService.state().inventory;
+    const inventory = this.playerInventory();
     if (!item || !item.recipeIds) return [];
 
     return item.recipeIds.map(recipeId => {
       const recipe = this.factoryService.getRecipe(recipeId)!;
       let canAfford = true;
-      for (const [itemId, requiredQty] of recipe.inputs.entries()) {
-        if ((playerInventory.get(itemId) || 0) < requiredQty) {
+      for (const [itemId, requiredQty] of Object.entries(recipe.inputs)) {
+        if ((inventory[itemId] || 0) < requiredQty) {
           canAfford = false;
           break;
         }

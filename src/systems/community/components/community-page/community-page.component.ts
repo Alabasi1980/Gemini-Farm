@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CommunityService } from '../../services/community.service';
 
@@ -8,9 +8,15 @@ import { CommunityService } from '../../services/community.service';
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CommunityPageComponent {
+export class CommunityPageComponent implements OnInit {
   communityService = inject(CommunityService);
   leaderboard = this.communityService.leaderboard;
+  loading = this.communityService.loading;
+  error = this.communityService.error;
+
+  ngOnInit() {
+    this.communityService.loadLeaderboard();
+  }
 
   getRankIcon(rank: number): string {
     if (rank === 1) return '🥇';

@@ -17,6 +17,8 @@ export class ItemService {
     private factoryService = inject(FactoryService);
     
     getItem(id: string): ItemData | undefined {
+        if (!id) return undefined;
+        
         const crop = this.cropService.getCrop(id);
         if (crop) {
             return {

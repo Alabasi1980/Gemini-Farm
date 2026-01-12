@@ -1,54 +1,66 @@
 <div class="p-8">
   <h1 class="text-3xl font-bold text-teal-400 mb-6">Community Leaderboard</h1>
 
-  <div class="max-w-4xl mx-auto bg-slate-800/50 border border-slate-700 rounded-lg shadow-lg">
-    <!-- Header -->
-    <div class="grid grid-cols-12 gap-4 px-6 py-3 font-bold text-slate-400 border-b border-slate-700">
-      <div class="col-span-2 text-center">Rank</div>
-      <div class="col-span-5">Player</div>
-      <div class="col-span-2 text-center">Level</div>
-      <div class="col-span-3 text-right">XP</div>
+  @if (loading()) {
+    <div class="text-center py-20 bg-slate-800/50 rounded-lg">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-400 mx-auto"></div>
+      <p class="mt-4 text-teal-300 font-semibold">Loading leaderboard...</p>
     </div>
-    
-    <!-- Body -->
-    <div class="divide-y divide-slate-700/50">
-      @for (entry of leaderboard(); track entry.rank) {
-        <div 
-          class="grid grid-cols-12 gap-4 px-6 py-4 items-center"
-          [class]="entry.isPlayer ? 'bg-green-800/30' : ''">
-          
-          <!-- Rank -->
-          <div class="col-span-2 text-center text-xl font-bold"
-            [class]="{
-              'text-yellow-400': entry.rank === 1,
-              'text-slate-300': entry.rank === 2,
-              'text-orange-400': entry.rank === 3,
-              'text-slate-400': entry.rank > 3
-            }">
-            {{ getRankIcon(entry.rank) }}
-          </div>
-          
-          <!-- Player Name -->
-          <div class="col-span-5 font-semibold text-white">
-            {{ entry.name }}
-            @if (entry.isPlayer) {
-              <span class="ml-2 text-xs bg-green-600 text-white px-2 py-0.5 rounded-full">You</span>
-            }
-          </div>
-          
-          <!-- Level -->
-          <div class="col-span-2 text-center">
-            <span class="bg-yellow-500/20 text-yellow-300 font-bold text-sm px-3 py-1 rounded-full border border-yellow-500/50">
-              {{ entry.level }}
-            </span>
-          </div>
-          
-          <!-- XP -->
-          <div class="col-span-3 text-right font-mono text-slate-300">
-            {{ entry.xp | number }}
-          </div>
-        </div>
-      }
+  } @else if (error()) {
+    <div class="text-center py-12 bg-red-900/50 border border-red-700 rounded-lg">
+      <p class="text-red-300 font-bold text-lg">Error</p>
+      <p class="mt-2 text-red-400">{{ error() }}</p>
     </div>
-  </div>
+  } @else {
+    <div class="max-w-4xl mx-auto bg-slate-800/50 border border-slate-700 rounded-lg shadow-lg">
+      <!-- Header -->
+      <div class="grid grid-cols-12 gap-4 px-6 py-3 font-bold text-slate-400 border-b border-slate-700">
+        <div class="col-span-2 text-center">Rank</div>
+        <div class="col-span-5">Player</div>
+        <div class="col-span-2 text-center">Level</div>
+        <div class="col-span-3 text-right">XP</div>
+      </div>
+      
+      <!-- Body -->
+      <div class="divide-y divide-slate-700/50">
+        @for (entry of leaderboard(); track entry.rank) {
+          <div 
+            class="grid grid-cols-12 gap-4 px-6 py-4 items-center"
+            [class]="entry.isPlayer ? 'bg-green-800/30' : ''">
+            
+            <!-- Rank -->
+            <div class="col-span-2 text-center text-xl font-bold"
+              [class]="{
+                'text-yellow-400': entry.rank === 1,
+                'text-slate-300': entry.rank === 2,
+                'text-orange-400': entry.rank === 3,
+                'text-slate-400': entry.rank > 3
+              }">
+              {{ getRankIcon(entry.rank) }}
+            </div>
+            
+            <!-- Player Name -->
+            <div class="col-span-5 font-semibold text-white truncate" [title]="entry.name">
+              {{ entry.name }}
+              @if (entry.isPlayer) {
+                <span class="ml-2 text-xs bg-green-600 text-white px-2 py-0.5 rounded-full">You</span>
+              }
+            </div>
+            
+            <!-- Level -->
+            <div class="col-span-2 text-center">
+              <span class="bg-yellow-500/20 text-yellow-300 font-bold text-sm px-3 py-1 rounded-full border border-yellow-500/50">
+                {{ entry.level }}
+              </span>
+            </div>
+            
+            <!-- XP -->
+            <div class="col-span-3 text-right font-mono text-slate-300">
+              {{ entry.xp | number }}
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
 </div>
