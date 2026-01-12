@@ -1,8 +1,9 @@
 import { Injectable, inject, signal, effect, computed } from '@angular/core';
 import { FactoryState, ProcessedGood, Recipe, ProductionJob } from '../../../shared/types/game.types';
 import { GameStateService } from '../../player/services/game-state.service';
-import { FarmService } from '../../farm/services/farm.service';
 import { ObjectService } from '../../farm/services/object.service';
+import { PlacementService } from '../../farm/services/placement.service';
+import { GameClockService } from '../../world/services/game-clock.service';
 
 const PROCESSED_GOODS_DATA: ProcessedGood[] = [
     { id: 'flour', name: 'Flour', sellPrice: 20, asset: '⚪' },
@@ -22,8 +23,9 @@ const RECIPES_DATA: Recipe[] = [
 @Injectable({ providedIn: 'root' })
 export class FactoryService {
     private gameStateService = inject(GameStateService);
-    private farmService = inject(FarmService);
+    private placementService = inject(PlacementService);
     private objectService = inject(ObjectService);
+    private gameClockService = inject(GameClockService);
 
     private goods = new Map<string, ProcessedGood>(PROCESSED_GOODS_DATA.map(g => [g.id, g]));
     private recipes = new Map<string, Recipe>(RECIPES_DATA.map(r => [r.id, r]));
@@ -35,7 +37,7 @@ export class FactoryService {
         const collectable = [];
         for (const [instanceId, state] of this.factoryStates().entries()) {
             if (state.outputReady) {
-                const farmObject = this.farmService.placedObjects().find(o => o.instanceId === instanceId);
+                const farmObject = this.placementService.placedObjects().find(o => o.instanceId === instanceId);
                 if (farmObject) {
                     collectable.push(farmObject);
                 }
@@ -47,7 +49,7 @@ export class FactoryService {
     constructor() {
         // Listen to game tick to update production progress
         effect(() => {
-            this.farmService.gameTick(); // Depend on gameTick
+            this.gameClockService.gameTick(); // Depend on global gameTick
             this.factoryStates.update(currentStates => {
                 const newStates = new Map(currentStates);
                 let changed = false;
@@ -73,7 +75,7 @@ export class FactoryService {
 
         // Effect to add/remove states when factories are placed/removed
         effect(() => {
-            const factories = this.farmService.placedObjects()
+            const factories = this.placementService.placedObjects()
                 .filter(obj => this.objectService.getItem(obj.itemId)?.type === 'factory');
             
             this.factoryStates.update(currentStates => {
@@ -108,7 +110,7 @@ export class FactoryService {
     getAllProcessedGoods(): ProcessedGood[] { return Array.from(this.goods.values()); }
 
     getFactoryConfig(instanceId: number) {
-        const farmObject = this.farmService.placedObjects().find(o => o.instanceId === instanceId);
+        const farmObject = this.placementService.placedObjects().find(o => o.instanceId === instanceId);
         if (!farmObject) return null;
         const item = this.objectService.getItem(farmObject.itemId);
         const state = this.factoryStates().get(instanceId);
@@ -137,7 +139,6 @@ export class FactoryService {
                 const newJob: ProductionJob = { jobId: this.nextJobId++, recipeId, startTime: 0 };
                 const newQueue = [...current.queue, newJob];
                 
-                // If this is the first item in an empty queue, start it now
                 if (newQueue.length === 1 && !current.outputReady) {
                     newQueue[0].startTime = Date.now();
                 }
@@ -165,7 +166,6 @@ export class FactoryService {
                 const current = states.get(instanceId)!;
                 const newQueue = current.queue.slice(1);
                 
-                // Start next job if it exists
                 if (newQueue.length > 0) {
                     newQueue[0].startTime = Date.now();
                 }
@@ -174,10 +174,7 @@ export class FactoryService {
                 const newStates = new Map(states);
                 newStates.set(instanceId, updatedState);
                 
-                // Handle Auto-Run
                 if (current.autoRun && current.lastRecipeId) {
-                   // We need to allow signal writes here because startProduction updates the state.
-                   // The effect running this will ensure atomicity.
                    setTimeout(() => this.startProduction(instanceId, current.lastRecipeId!), 0);
                 }
 

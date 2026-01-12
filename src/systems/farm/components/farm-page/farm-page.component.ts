@@ -9,6 +9,8 @@ import { RecipePickerComponent } from '../../../production/components/recipe-pic
 import { FactoryService } from '../../../production/services/factory.service';
 import { GameClockService } from '../../../world/services/game-clock.service';
 import { GameStateService } from '../../../player/services/game-state.service';
+import { GridService } from '../../services/grid.service';
+import { DragDropService } from '../../services/drag-drop.service';
 
 const MIN_ZOOM = 0.3;
 const MAX_ZOOM = 1.5;
@@ -24,12 +26,14 @@ export class FarmPageComponent {
   factoryService = inject(FactoryService);
   gameClockService = inject(GameClockService);
   gameStateService = inject(GameStateService);
+  gridService = inject(GridService);
+  dragDropService = inject(DragDropService);
 
   farmGrid = viewChild.required(FarmGridComponent);
 
   showCropPicker = this.farmService.activePickerPlotId;
   showRecipePicker = this.farmService.activeFactoryId;
-  expansionPreview = this.farmService.expansionPreview;
+  expansionPreview = this.gridService.expansionPreview;
 
   // Game clock state
   season = this.gameClockService.currentSeason;
@@ -50,7 +54,8 @@ export class FarmPageComponent {
   onCropSelected(cropId: string) {
     const plotId = this.showCropPicker();
     if (plotId !== null) {
-      this.farmService.plantCrop(plotId, cropId);
+      this.gridService.plantCrop(plotId, cropId);
+      this.farmService.closePicker();
     }
   }
 
@@ -71,11 +76,11 @@ export class FarmPageComponent {
   }
 
   onConfirmExpansion() {
-    this.farmService.confirmExpansion();
+    this.gridService.confirmExpansion();
   }
 
   onCancelExpansion() {
-    this.farmService.cancelExpansion();
+    this.gridService.cancelExpansion();
   }
 
   // Camera Controls
@@ -108,12 +113,9 @@ export class FarmPageComponent {
   }
 
   onMouseDown(event: MouseEvent) {
-    // If a child element handles the click, it should stop propagation.
-    // Therefore, if the event reaches here, it's a click on the background.
     this.farmService.deselectObject();
 
-    // Don't start panning if we're already dragging something.
-    if (this.farmService.draggingState()) return;
+    if (this.dragDropService.draggingState()) return;
 
     event.preventDefault();
     this.isPanning.set(true);
@@ -130,23 +132,25 @@ export class FarmPageComponent {
         x: this.panStartTranslate.x + dx,
         y: this.panStartTranslate.y + dy,
       });
-    } else if (this.farmService.draggingState()) {
-      const gridElement = this.farmGrid().elementRef.nativeElement.querySelector('.grid');
+    } else if (this.dragDropService.draggingState()) {
+      const gridElement = this.farmGrid().elementRef.nativeElement.querySelector('.iso-container > .grid');
       if (gridElement) {
-        this.farmService.handleDrag(event, gridElement);
+        this.dragDropService.handleDrag(event, gridElement);
       }
     }
   }
 
   onMouseUp(event: MouseEvent) {
     this.isPanning.set(false);
-    // Also handle object drop
-    if (this.farmService.draggingState()) {
-      this.farmService.endDrag();
+    if (this.dragDropService.draggingState()) {
+      this.dragDropService.endDrag();
     }
   }
 
   onMouseLeave() {
     this.isPanning.set(false);
+    if (this.dragDropService.draggingState()) {
+      this.dragDropService.endDrag();
+    }
   }
 }

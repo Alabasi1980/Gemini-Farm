@@ -5,10 +5,13 @@ import { FarmService } from '../../services/farm.service';
 import { ObjectService } from '../../services/object.service';
 import { AnimalService } from '../../services/animal.service';
 import { FactoryService } from '../../../production/services/factory.service';
+import { DragDropService } from '../../services/drag-drop.service';
+import { GameClockService } from '../../../world/services/game-clock.service';
 
 @Component({
   selector: 'app-placeable-object',
   templateUrl: './placeable-object.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[style.grid-column]': 'positionStyles().gridColumn',
     '[style.grid-row]': 'positionStyles().gridRow',
@@ -29,10 +32,12 @@ export class PlaceableObjectComponent {
   objectService = inject(ObjectService);
   animalService = inject(AnimalService);
   factoryService = inject(FactoryService);
+  dragDropService = inject(DragDropService);
+  gameClockService = inject(GameClockService);
   elementRef = inject(ElementRef);
   
-  gameTick = this.farmService.gameTick;
-  draggingState = this.farmService.draggingState;
+  gameTick = this.gameClockService.gameTick;
+  draggingState = this.dragDropService.draggingState;
   
   item = computed<PlaceableItem | undefined>(() => this.objectService.getItem(this.object().itemId));
   isBeingDragged = computed(() => this.draggingState()?.object.instanceId === this.object().instanceId);
@@ -113,7 +118,7 @@ export class PlaceableObjectComponent {
   onStartMove(event: MouseEvent) {
     event.stopPropagation();
     event.preventDefault();
-    this.farmService.startDrag(this.object().instanceId, event, this.elementRef.nativeElement);
+    this.dragDropService.startDrag(this.object().instanceId, event, this.elementRef.nativeElement);
   }
 
   handleInteraction(event: MouseEvent, action: 'collect' | 'produce' | 'collect-factory') {

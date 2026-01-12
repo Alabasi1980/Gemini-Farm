@@ -1,8 +1,9 @@
 import { Injectable, signal, inject, effect, computed } from '@angular/core';
 import { AnimalBuildingState, AnimalProduct } from '../../../shared/types/game.types';
 import { GameStateService } from '../../player/services/game-state.service';
-import { FarmService } from './farm.service';
 import { ObjectService } from './object.service';
+import { PlacementService } from './placement.service';
+import { GameClockService } from '../../world/services/game-clock.service';
 
 const ANIMAL_PRODUCTS_DATA: AnimalProduct[] = [
     { id: 'egg', name: 'Egg', sellPrice: 12, asset: '🥚' }
@@ -11,18 +12,19 @@ const ANIMAL_PRODUCTS_DATA: AnimalProduct[] = [
 @Injectable({ providedIn: 'root' })
 export class AnimalService {
     private gameStateService = inject(GameStateService);
-    private farmService = inject(FarmService);
+    private placementService = inject(PlacementService);
     private objectService = inject(ObjectService);
+    private gameClockService = inject(GameClockService);
 
     private products = new Map<string, AnimalProduct>(ANIMAL_PRODUCTS_DATA.map(p => [p.id, p]));
     
     productionStates = signal<Map<number, AnimalBuildingState>>(new Map());
 
     collectableBuildings = computed(() => {
-        this.farmService.gameTick(); // Depend on tick
+        this.gameClockService.gameTick(); // Depend on tick
         const collectable = [];
         for (const [instanceId, state] of this.productionStates().entries()) {
-            const farmObject = this.farmService.placedObjects().find(o => o.instanceId === instanceId);
+            const farmObject = this.placementService.placedObjects().find(o => o.instanceId === instanceId);
             if (!farmObject) continue;
             
             const item = this.objectService.getItem(farmObject.itemId);
@@ -37,19 +39,16 @@ export class AnimalService {
     });
 
     constructor() {
-        // Effect to automatically add/remove state when animal buildings are placed/removed
         effect(() => {
-            const animalBuildings = this.farmService.placedObjects()
+            const animalBuildings = this.placementService.placedObjects()
                 .filter(obj => this.objectService.getItem(obj.itemId)?.type === 'animal_housing');
             
             this.productionStates.update(currentStates => {
                 const newStates = new Map(currentStates);
-                const currentIds = new Set(currentStates.keys());
                 const buildingIds = new Set(animalBuildings.map(b => b.instanceId));
 
-                // Add new buildings
                 for (const building of animalBuildings) {
-                    if (!currentIds.has(building.instanceId)) {
+                    if (!newStates.has(building.instanceId)) {
                         newStates.set(building.instanceId, {
                             instanceId: building.instanceId,
                             lastCollectionTime: Date.now()
@@ -57,8 +56,7 @@ export class AnimalService {
                     }
                 }
                 
-                // Remove sold/removed buildings
-                for (const id of currentIds) {
+                for (const id of currentStates.keys()) {
                     if (!buildingIds.has(id)) {
                         newStates.delete(id);
                     }
@@ -77,7 +75,7 @@ export class AnimalService {
     }
 
     collect(instanceId: number) {
-        const farmObject = this.farmService.placedObjects().find(o => o.instanceId === instanceId);
+        const farmObject = this.placementService.placedObjects().find(o => o.instanceId === instanceId);
         if (!farmObject) return;
         
         const item = this.objectService.getItem(farmObject.itemId);

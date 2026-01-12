@@ -21,6 +21,7 @@ const SEASON_WEATHER_PROBABILITY: Record<Season, Record<Weather, number>> = {
   providedIn: 'root',
 })
 export class GameClockService {
+    gameTick = signal<number>(Date.now());
     gameDate = signal<GameDate>({ day: 1, hour: 6, year: 1 });
     currentWeather = signal<Weather>('Sunny');
 
@@ -34,6 +35,7 @@ export class GameClockService {
 
     constructor() {
         setInterval(() => this.advanceTime(), GAME_HOUR_IN_MS);
+        setInterval(() => this.gameTick.set(Date.now()), 1000); // Add 1-second tick
     }
 
     private advanceTime() {

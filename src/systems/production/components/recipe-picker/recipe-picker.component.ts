@@ -5,7 +5,7 @@ import { GameStateService } from '../../../player/services/game-state.service';
 import { ObjectService } from '../../../farm/services/object.service';
 import { ItemService } from '../../../../shared/services/item.service';
 import { Recipe } from '../../../../shared/types/game.types';
-import { FarmService } from '../../../farm/services/farm.service';
+import { PlacementService } from '../../../farm/services/placement.service';
 
 interface RecipeDisplayData extends Recipe {
     canAfford: boolean;
@@ -28,10 +28,10 @@ export class RecipePickerComponent {
   gameStateService = inject(GameStateService);
   objectService = inject(ObjectService);
   itemService = inject(ItemService);
-  farmService = inject(FarmService);
+  placementService = inject(PlacementService);
 
   factoryItem = computed(() => {
-    const farmObject = this.farmService.placedObjects().find(o => o.instanceId === this.factoryInstanceId());
+    const farmObject = this.placementService.placedObjects().find(o => o.instanceId === this.factoryInstanceId());
     return farmObject ? this.objectService.getItem(farmObject.itemId) : undefined;
   });
 

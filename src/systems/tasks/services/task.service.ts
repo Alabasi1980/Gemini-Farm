@@ -2,14 +2,14 @@ import { Injectable, signal, inject, effect } from '@angular/core';
 import { GameTask, TaskState } from '../../../shared/types/game.types';
 import { GameStateService } from '../../player/services/game-state.service';
 import { AiTaskService, PlayerTaskContext } from './ai-task.service';
-import { FarmService } from '../../farm/services/farm.service';
 import { ObjectService } from '../../farm/services/object.service';
+import { PlacementService } from '../../farm/services/placement.service';
 
 @Injectable({ providedIn: 'root' })
 export class TaskService {
     private gameStateService = inject(GameStateService);
     private aiTaskService = inject(AiTaskService);
-    private farmService = inject(FarmService);
+    private placementService = inject(PlacementService);
     private objectService = inject(ObjectService);
 
     tasks = signal<GameTask[]>([]);
@@ -76,7 +76,7 @@ export class TaskService {
                 inventoryObject[key] = value;
             });
 
-            const ownedFactories = this.farmService.placedObjects()
+            const ownedFactories = this.placementService.placedObjects()
                 .map(obj => this.objectService.getItem(obj.itemId))
                 .filter(item => item?.type === 'factory')
                 .map(item => item!.id);

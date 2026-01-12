@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { FarmService } from '../../../farm/services/farm.service';
 import { GameStateService } from '../../../player/services/game-state.service';
 import { CommonModule } from '@angular/common';
 import { CropService } from '../../../farm/services/crop.service';
 import { ObjectService } from '../../../farm/services/object.service';
+import { PlacementService } from '../../../farm/services/placement.service';
 
 @Component({
   selector: 'shop-page',
@@ -12,16 +12,16 @@ import { ObjectService } from '../../../farm/services/object.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShopPageComponent {
-  farmService = inject(FarmService);
   gameStateService = inject(GameStateService);
   cropService = inject(CropService);
   objectService = inject(ObjectService);
+  placementService = inject(PlacementService);
 
   playerCoins = this.gameStateService.state().coins;
   availableCrops = this.cropService.getAllCrops();
   placeableItems = this.objectService.getAllItems();
   
   buyObject(itemId: string) {
-    this.farmService.buyObject(itemId);
+    this.placementService.buyObject(itemId);
   }
 }

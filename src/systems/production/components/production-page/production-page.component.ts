@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FarmService } from '../../../farm/services/farm.service';
 import { FactoryService } from '../../services/factory.service';
 import { ObjectService } from '../../../farm/services/object.service';
 import { ItemService } from '../../../../shared/services/item.service';
 import { PlaceableItem, ProductionJob } from '../../../../shared/types/game.types';
 import { GameStateService } from '../../../player/services/game-state.service';
+import { PlacementService } from '../../../farm/services/placement.service';
+import { GameClockService } from '../../../world/services/game-clock.service';
 
 interface FactoryDisplayInfo {
     instanceId: number;
@@ -28,17 +29,16 @@ interface FactoryDisplayInfo {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductionPageComponent {
-    farmService = inject(FarmService);
     factoryService = inject(FactoryService);
     objectService = inject(ObjectService);
     itemService = inject(ItemService);
     gameStateService = inject(GameStateService);
-
-    gameTick = this.farmService.gameTick;
+    placementService = inject(PlacementService);
+    gameClockService = inject(GameClockService);
 
     factories = computed<FactoryDisplayInfo[]>(() => {
-        this.gameTick(); // Rerun on tick
-        const placedFactories = this.farmService.placedObjects().filter(obj => 
+        this.gameClockService.gameTick(); // Rerun on tick
+        const placedFactories = this.placementService.placedObjects().filter(obj => 
             this.objectService.getItem(obj.itemId)?.type === 'factory'
         );
 
@@ -48,7 +48,6 @@ export class ProductionPageComponent {
             const config = this.factoryService.getFactoryConfig(factoryObj.instanceId);
             
             if (!state || !config) {
-                // This might happen briefly when a factory is first placed
                 return { 
                     instanceId: factoryObj.instanceId, item, status: 'Idle', progress: 0, level: 1, 
                     queue: [], queueSize: 0, upgradeCost: 0, canAffordUpgrade: false, autoRun: false, queuedItems: []
