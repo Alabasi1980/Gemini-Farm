@@ -1,0 +1,62 @@
+<div class="p-8">
+  <h1 class="text-3xl font-bold text-slate-300 mb-6">Management</h1>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Workers Panel -->
+    <div class="lg:col-span-2">
+      <h2 class="text-2xl font-semibold mb-4 text-cyan-300">Automated Workers</h2>
+      <div class="space-y-4">
+        @for(worker of workers(); track worker.id) {
+          <div class="bg-slate-800 border border-slate-700 rounded-lg p-4 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+              <span class="text-5xl">{{ worker.asset }}</span>
+              <div>
+                <h3 class="text-xl font-bold text-white">{{ worker.name }}</h3>
+                <p class="text-sm" [class]="worker.active ? 'text-green-400' : 'text-slate-400'">
+                  Status: <span class="font-semibold">{{ worker.active ? worker.status : 'Inactive' }}</span>
+                </p>
+              </div>
+            </div>
+
+            <!-- Toggle Switch -->
+            <div class="flex items-center space-x-3">
+              <span class="text-sm font-medium" [class]="worker.active ? 'text-white' : 'text-slate-500'">
+                {{ worker.active ? 'Active' : 'Inactive' }}
+              </span>
+              <button 
+                (click)="toggleWorker(worker.id)"
+                class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors"
+                [class]="worker.active ? 'bg-green-600' : 'bg-slate-600'">
+                <span
+                  class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform"
+                  [class]="worker.active ? 'translate-x-6' : 'translate-x-1'"></span>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Action Log Panel -->
+    <div>
+      <h2 class="text-2xl font-semibold mb-4 text-purple-300">Action Log</h2>
+      <div class="bg-slate-800 border border-slate-700 rounded-lg p-4 h-96 flex flex-col-reverse">
+        @if (logs().length === 0) {
+          <div class="text-center text-slate-500 m-auto">
+            <p>No actions recorded yet.</p>
+            <p class="text-xs">Activate a worker to see their actions here.</p>
+          </div>
+        } @else {
+          <div class="space-y-2 overflow-y-auto">
+            @for (log of logs(); track log.timestamp) {
+              <div class="text-sm animate-fade-in-down">
+                <span class="text-slate-500 mr-2">{{ log.timestamp | date:'HH:mm:ss' }}</span>
+                <span class="text-slate-300">{{ log.message }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

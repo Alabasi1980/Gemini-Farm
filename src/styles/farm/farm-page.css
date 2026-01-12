@@ -1,0 +1,130 @@
+.scene-container {
+    cursor: grab;
+}
+
+.scene-container:active {
+    cursor: grabbing;
+}
+
+/* --- SEASONS --- */
+/* Default (Spring) - Earthy tones */
+.sky-gradient { background: linear-gradient(to bottom, #87CEEB 0%, #cce7f5 100%); }
+.ground-gradient { 
+    background-color: #6b4f3a; /* Base soil color */
+    background-image: url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%235a3f2a' fill-opacity='0.3' fill-rule='evenodd'%3E%3Cpath d='M5 0h1L0 6V5zM6 5v1H5z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Summer */
+.season-summer .sky-gradient { background: linear-gradient(to bottom, #47abff 0%, #87CEFA 100%); }
+.season-summer .ground-gradient { background-color: #7d5c43; } /* Drier soil */
+
+/* Autumn */
+.season-autumn .sky-gradient { background: linear-gradient(to bottom, #ffca7a 0%, #d8ae6b 100%); }
+.season-autumn .ground-gradient { background-color: #8b5a2b; } /* Rich, dark soil */
+
+/* Winter */
+.season-winter .sky-gradient { background: linear-gradient(to bottom, #d4e1f2 0%, #a5b7d0 100%); }
+.season-winter .ground-gradient { 
+    background: radial-gradient(ellipse at 50% 80%, #ffffff 0%, #f0f4f7 70%, #d4dce2 100%); 
+    background-image: none; /* Remove texture for snow */
+}
+.season-winter .cloud { opacity: 0.2; }
+
+
+.interactive-child {
+    /* This class is used as a selector to prevent panning when clicking on the grid itself */
+    cursor: default;
+}
+
+/* --- WEATHER --- */
+.weather-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 5;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+}
+
+/* Cloudy */
+.weather-cloudy .sky-gradient { filter: grayscale(30%) brightness(0.9); }
+
+/* Rainy */
+.weather-rainy .weather-overlay {
+    opacity: 1;
+    background-image: linear-gradient(transparent, transparent),
+                      linear-gradient(to bottom, rgba(255,255,255,0.2) 1px, transparent 1px),
+                      linear-gradient(to right, rgba(255,255,255,0.2) 1px, transparent 1px);
+    background-size: 100% 100%, 4px 40px, 40px 4px;
+    animation: rain 0.5s linear infinite;
+}
+.weather-rainy .sky-gradient { filter: brightness(0.7); }
+.weather-rainy .ground-gradient { filter: brightness(0.8); } /* Darken ground when wet */
+
+/* Snowy */
+.weather-snowy .weather-overlay {
+    opacity: 1;
+    background-image: 
+        radial-gradient(circle at center, white 1px, transparent 1.5px),
+        radial-gradient(circle at center, white 0.8px, transparent 1.2px),
+        radial-gradient(circle at center, white 1.2px, transparent 1.8px);
+    background-size: 100px 100px, 70px 70px, 150px 150px;
+    background-position: 0 0, 30px 40px, 80px 20px;
+    animation: snow 10s linear infinite;
+}
+.weather-snowy .sky-gradient { filter: brightness(0.8); }
+@keyframes snow {
+    to { background-position: 0 1000px, 30px 1040px, 80px 1020px; }
+}
+
+
+/* --- Animated Clouds --- */
+.cloud {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+    opacity: 0.6;
+    filter: blur(10px);
+    animation: moveClouds 60s linear infinite;
+}
+
+.cloud::before, .cloud::after {
+    content: '';
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+} 
+
+.cloud-1 {
+    width: 200px;
+    height: 60px;
+    top: 10%;
+    animation-duration: 70s;
+}
+.cloud-1::before { width: 100px; height: 100px; top: -50px; left: 30px; }
+.cloud-1::after { width: 140px; height: 140px; top: -70px; right: 20px; }
+
+.cloud-2 {
+    width: 300px;
+    height: 80px;
+    top: 25%;
+    animation-duration: 50s;
+    animation-delay: -15s;
+}
+.cloud-2::before { width: 150px; height: 150px; top: -70px; left: 40px; }
+.cloud-2::after { width: 180px; height: 180px; top: -90px; right: 50px; }
+
+.cloud-3 {
+    width: 250px;
+    height: 70px;
+    top: 40%;
+    animation-duration: 90s;
+    animation-delay: -30s;
+}
+.cloud-3::before { width: 120px; height: 120px; top: -60px; left: 30px; }
+.cloud-3::after { width: 160px; height: 160px; top: -80px; right: 30px; }
+
+@keyframes moveClouds {
+    0% { transform: translateX(-300px); }
+    100% { transform: translateX(110vw); }
+}
