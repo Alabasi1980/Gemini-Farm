@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, Pipe, PipeTransform, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 import { FarmPageComponent } from './systems/farm/components/farm-page/farm-page.component';
 import { ShopPageComponent } from './systems/shop/components/shop-page/shop-page.component';
@@ -18,6 +19,16 @@ interface NavItem {
   icon: string;
 }
 
+@Pipe({ name: 'safeHtml', standalone: true })
+export class SafeHtmlPipe implements PipeTransform {
+  // FIX: Explicitly typed DomSanitizer to fix property access error.
+  private sanitizer: DomSanitizer = inject(DomSanitizer);
+  transform(value: string): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(value);
+  }
+}
+
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -32,6 +43,7 @@ interface NavItem {
     CommunityPageComponent,
     ManagementPageComponent,
     MarketTickerComponent,
+    SafeHtmlPipe,
   ],
 })
 export class AppComponent {

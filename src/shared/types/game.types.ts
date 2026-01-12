@@ -9,7 +9,7 @@ export interface PlayerState {
   expansionsPurchased: number;
 }
 
-export type TileState = 'locked' | 'free_space' | 'empty_plot' | 'planted_plot' | 'building_pad';
+export type TileState = 'locked' | 'free_space' | 'empty_plot' | 'planted_plot';
 
 export interface FarmTile {
   id: number;

@@ -1,6 +1,9 @@
-<div class="relative w-full h-full"
-     [class.cursor-grab]="!isAnimalBuilding() && !isFactory()"
-     [class.active:cursor-grabbing]="!isAnimalBuilding() && !isFactory()">
+<div class="relative w-full h-full">
+
+    <!-- Selection Indicator -->
+    @if(isSelected() && !isBeingDragged()) {
+        <div class="absolute inset-0 border-4 border-cyan-400 rounded-lg pointer-events-none animate-pulse"></div>
+    }
 
     <!-- Drag Visual Feedback (Stays in transformed space) -->
     <div class="absolute inset-0 rounded-lg transition-colors"
@@ -12,13 +15,24 @@
 
     <!-- Main content wrapper to un-transform elements -->
     <div class="un-transform w-full h-full transition-transform duration-100" [class.scale-105]="isBeingDragged()">
-        <div class="relative w-full h-full flex items-center justify-center" [class.cursor-grab]="true" [class.active:cursor-grabbing]="true" (mousedown)="onMouseDown($event)">
+        <div class="relative w-full h-full flex items-center justify-center cursor-pointer" (click)="onSelectObject($event)">
             @if (item(); as itemData) {
                 <span class="select-none drop-shadow-lg" 
                     [style.font-size.rem]="(itemData.width + itemData.height) * 1.5"
                     [class.opacity-75]="isBeingDragged()">
                     {{ itemData.asset }}
                 </span>
+            }
+
+            <!-- Move Button UI -->
+            @if(isSelected() && !isBeingDragged()) {
+                <div class="absolute -top-6 left-1/2 -translate-x-1/2 z-10">
+                    <div class="flex space-x-2 p-1 bg-slate-900/50 rounded-full backdrop-blur-sm">
+                        <button (mousedown)="onStartMove($event)" title="Move Item" class="interaction-button h-10 w-10 p-2 bg-blue-500 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-400 transition-colors cursor-grab active:cursor-grabbing">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 1v4m0 0h-4m4 0l-5-5" /></svg>
+                        </button>
+                    </div>
+                </div>
             }
 
             <!-- Animal Production UI -->

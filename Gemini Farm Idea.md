@@ -755,16 +755,10 @@
 
 # 14) التقنيات والجودة (Tech & Quality)
 
--  React 19
-    
--  TypeScript 5.8
-    
+-  Angular 21+
+-  TypeScript 5.5
 -  Tailwind CSS 4
-    
 -  Firebase + Firestore
-    
--  Framer Motion 12.25
-    
 -  دعم RTL للعربية
     
 
@@ -814,3 +808,4 @@
     
 -  قابلية توسع قوية للمستقبل
     
+

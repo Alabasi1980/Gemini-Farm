@@ -59,7 +59,8 @@ export class PlotComponent {
     return { growthPercent, asset: currentAsset, isReady };
   });
 
-  onClick() {
+  onClick(event: MouseEvent) {
+    event.stopPropagation(); // Prevent click from bubbling to farm-page for deselection
     const tile = this.plot();
     switch(tile.state) {
       case 'locked':

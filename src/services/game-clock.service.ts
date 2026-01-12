@@ -63,7 +63,7 @@ export class GameClockService {
         let cumulative = 0;
 
         for (const [weather, prob] of Object.entries(probabilities)) {
-            cumulative += prob;
+            cumulative += prob as number;
             if (rand < cumulative) {
                 this.currentWeather.set(weather as Weather);
                 return;

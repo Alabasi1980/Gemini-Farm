@@ -27,7 +27,6 @@ export class RecipePickerComponent {
   gameStateService = inject(GameStateService);
   objectService = inject(ObjectService);
   itemService = inject(ItemService);
-  // FIX: Resolve 'Cannot find name 'FarmService'' by importing it and injecting it as a class property, which is a best practice over using inject() inside a computed signal.
   farmService = inject(FarmService);
 
   factoryItem = computed(() => {

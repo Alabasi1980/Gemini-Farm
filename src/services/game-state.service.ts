@@ -21,6 +21,7 @@ export class GameStateService {
   currentStorage = computed(() => {
     let count = 0;
     for (const quantity of this.state().inventory.values()) {
+        // FIX: Corrected type inference. 'quantity' is a number from the Map's values.
         count += quantity;
     }
     return count;
@@ -57,6 +58,7 @@ export class GameStateService {
     this.state.update(s => {
         const newInventory = new Map(s.inventory);
         for (const [itemId, requiredQuantity] of items.entries()) {
+            // FIX: Corrected type inference. 'currentQuantity' is a number because of the preceding check and non-null assertion.
             const currentQuantity = newInventory.get(itemId)!;
             const newQuantity = currentQuantity - requiredQuantity;
             if (newQuantity > 0) {
@@ -74,6 +76,7 @@ export class GameStateService {
   sellFromInventory(itemId: string, quantity: number, price: number) {
     this.state.update(s => {
         const newInventory = new Map(s.inventory);
+        // FIX: Corrected type inference. 'currentQuantity' is a number because of the fallback to 0.
         const currentQuantity = newInventory.get(itemId) || 0;
         
         if(currentQuantity < quantity) {

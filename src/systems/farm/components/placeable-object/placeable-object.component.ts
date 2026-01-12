@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FarmObject, PlaceableItem } from '../../../../shared/types/game.types';
 import { FarmService } from '../../services/farm.service';
@@ -29,12 +29,14 @@ export class PlaceableObjectComponent {
   objectService = inject(ObjectService);
   animalService = inject(AnimalService);
   factoryService = inject(FactoryService);
+  elementRef = inject(ElementRef);
   
   gameTick = this.farmService.gameTick;
   draggingState = this.farmService.draggingState;
   
   item = computed<PlaceableItem | undefined>(() => this.objectService.getItem(this.object().itemId));
   isBeingDragged = computed(() => this.draggingState()?.object.instanceId === this.object().instanceId);
+  isSelected = computed(() => this.farmService.selectedObjectInstanceId() === this.object().instanceId);
   isAnimalBuilding = computed(() => this.item()?.type === 'animal_housing');
   isFactory = computed(() => this.item()?.type === 'factory');
 
@@ -100,11 +102,18 @@ export class PlaceableObjectComponent {
     };
   });
 
-  onMouseDown(event: MouseEvent) {
-    if ((event.target as HTMLElement).closest('.interaction-button')) return;
-    
+  onSelectObject(event: MouseEvent) {
+    if ((event.target as HTMLElement).closest('.interaction-button')) {
+        return;
+    }
+    this.farmService.selectObject(this.object().instanceId);
+    event.stopPropagation();
+  }
+
+  onStartMove(event: MouseEvent) {
+    event.stopPropagation();
     event.preventDefault();
-    this.farmService.startDrag(this.object().instanceId, event);
+    this.farmService.startDrag(this.object().instanceId, event, this.elementRef.nativeElement);
   }
 
   handleInteraction(event: MouseEvent, action: 'collect' | 'produce' | 'collect-factory') {

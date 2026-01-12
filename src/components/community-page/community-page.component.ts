@@ -6,7 +6,6 @@ import { CommunityService } from '../../services/community.service';
   selector: 'community-page',
   templateUrl: './community-page.component.html',
   imports: [CommonModule],
-  // FIX: Corrected typo in ChangeDetectionStrategy.
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommunityPageComponent {

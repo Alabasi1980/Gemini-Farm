@@ -16,7 +16,6 @@ const MAX_ZOOM = 1.5;
 @Component({
   selector: 'farm-page',
   templateUrl: './farm-page.component.html',
-  styleUrl: './farm-page.component.css',
   imports: [CommonModule, HudComponent, FarmGridComponent, CropPickerComponent, PlaceableObjectComponent, RecipePickerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -25,6 +24,8 @@ export class FarmPageComponent {
   factoryService = inject(FactoryService);
   gameClockService = inject(GameClockService);
   gameStateService = inject(GameStateService);
+
+  farmGrid = viewChild.required(FarmGridComponent);
 
   showCropPicker = this.farmService.activePickerPlotId;
   showRecipePicker = this.farmService.activeFactoryId;
@@ -107,8 +108,12 @@ export class FarmPageComponent {
   }
 
   onMouseDown(event: MouseEvent) {
-    // Only pan if not dragging an object and not clicking on an interactive element
-    if (this.farmService.draggingState() || (event.target as HTMLElement).closest('.interactive-child')) return;
+    // If a child element handles the click, it should stop propagation.
+    // Therefore, if the event reaches here, it's a click on the background.
+    this.farmService.deselectObject();
+
+    // Don't start panning if we're already dragging something.
+    if (this.farmService.draggingState()) return;
 
     event.preventDefault();
     this.isPanning.set(true);
@@ -117,15 +122,20 @@ export class FarmPageComponent {
   }
 
   onMouseMove(event: MouseEvent) {
-    if (!this.isPanning()) return;
+    if (this.isPanning()) {
+      const dx = event.clientX - this.panStart.x;
+      const dy = event.clientY - this.panStart.y;
 
-    const dx = event.clientX - this.panStart.x;
-    const dy = event.clientY - this.panStart.y;
-
-    this.translate.set({
-      x: this.panStartTranslate.x + dx,
-      y: this.panStartTranslate.y + dy,
-    });
+      this.translate.set({
+        x: this.panStartTranslate.x + dx,
+        y: this.panStartTranslate.y + dy,
+      });
+    } else if (this.farmService.draggingState()) {
+      const gridElement = this.farmGrid().elementRef.nativeElement.querySelector('.grid');
+      if (gridElement) {
+        this.farmService.handleDrag(event, gridElement);
+      }
+    }
   }
 
   onMouseUp(event: MouseEvent) {

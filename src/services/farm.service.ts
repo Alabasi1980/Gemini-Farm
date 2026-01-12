@@ -42,7 +42,6 @@ export class FarmService {
   unlockedPlotCount = computed(() => this.plots().filter(p => p.state !== 'locked').length);
 
   expansionCost = computed(() => {
-    // FIX: Corrected typo from `unlockedCount` to `unlockedPlotCount`.
     const unlockedCount = this.unlockedPlotCount();
     return 100 * Math.floor(unlockedCount / PLOTS_PER_EXPANSION) ** 2 + 250;
   });

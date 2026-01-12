@@ -7,32 +7,21 @@
 }
 
 /* --- SEASONS --- */
-/* Default (Spring) - Pale Green Earth */
+/* Default (Spring) */
 .sky-gradient { background: linear-gradient(to bottom, #87CEEB 0%, #cce7f5 100%); }
-.ground-gradient { 
-    background-color: #d1fae5; /* Pale green (Tailwind green-100 equivalent) */
-    background-image: 
-        radial-gradient(#86efac 1px, transparent 1px);
-    background-size: 20px 20px;
-}
+.ground-gradient { background: radial-gradient(ellipse at 50% 80%, #68a048 0%, #3d6e34 70%, #2a4c28 100%); }
 
-/* Summer - Brighter, warmer green */
+/* Summer */
 .season-summer .sky-gradient { background: linear-gradient(to bottom, #47abff 0%, #87CEFA 100%); }
-.season-summer .ground-gradient { 
-    background-color: #bbf7d0; 
-}
+.season-summer .ground-gradient { background: radial-gradient(ellipse at 50% 80%, #76b947 0%, #4a8c32 70%, #3a6b2c 100%); }
 
-/* Autumn - Faded yellow-green */
+/* Autumn */
 .season-autumn .sky-gradient { background: linear-gradient(to bottom, #ffca7a 0%, #d8ae6b 100%); }
-.season-autumn .ground-gradient { 
-    background-color: #fef08a; /* Yellowish */
-}
+.season-autumn .ground-gradient { background: radial-gradient(ellipse at 50% 80%, #c48a47 0%, #8b5a26 70%, #6a451e 100%); }
 
 /* Winter */
 .season-winter .sky-gradient { background: linear-gradient(to bottom, #d4e1f2 0%, #a5b7d0 100%); }
-.season-winter .ground-gradient { 
-    background: radial-gradient(ellipse at 50% 80%, #ffffff 0%, #f0f4f7 70%, #d4dce2 100%); 
-}
+.season-winter .ground-gradient { background: radial-gradient(ellipse at 50% 80%, #ffffff 0%, #f0f4f7 70%, #d4dce2 100%); }
 .season-winter .cloud { opacity: 0.2; }
 
 
@@ -57,17 +46,25 @@
 /* Rainy */
 .weather-rainy .weather-overlay {
     opacity: 1;
-    /* Fixed rain texture to look like falling streaks, not grid squares */
-    background-image: linear-gradient(174deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0) 70%, rgba(255,255,255,0.4) 100%);
-    background-size: 6px 40px;
-    animation: rain 0.6s linear infinite;
+    background-image: repeating-linear-gradient(
+      -20deg, /* Angle of the rain */
+      rgba(200, 220, 255, 0.6),
+      rgba(200, 220, 255, 0.6) 1px,
+      transparent 1px,
+      transparent 40px /* Spacing between drops */
+    );
+    animation: rain 0.35s linear infinite;
 }
 .weather-rainy .sky-gradient { filter: brightness(0.7); }
 .weather-rainy .ground-gradient { filter: brightness(0.8) saturate(1.2); }
 
 @keyframes rain {
-    0% { background-position: 0px 0px; }
-    100% { background-position: 0px 40px; }
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 20px 40px; /* Animate both x and y for diagonal movement */
+  }
 }
 
 /* Snowy */
@@ -102,7 +99,7 @@
     position: absolute;
     background: white;
     border-radius: 50%;
-} 
+}
 
 .cloud-1 {
     width: 200px;

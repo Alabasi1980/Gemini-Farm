@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FarmService } from '../../services/farm.service';
 import { PlotComponent } from '../plot/plot.component';
@@ -17,7 +17,9 @@ export class FarmGridComponent {
   farmService = inject(FarmService);
   workerService = inject(WorkerService);
   
-  plots = this.farmService.tiles; // Renamed from plots to tiles
+  plots = this.farmService.tiles;
   placedObjects = this.farmService.placedObjects;
   workers = this.workerService.workers;
+  
+  elementRef = inject(ElementRef);
 }

@@ -28,11 +28,11 @@ export class TaskService {
                 let hasChanged = false;
 
                 for (const task of currentTasks) {
-                    const currentState = newStates.get(task.id);
+                    const currentState = newStates.get(task.id) as TaskState | undefined;
                     if (!currentState || currentState.claimed) continue;
 
                     if (task.type === 'INVENTORY') {
-                        const newProgress = inventory.get(task.targetItemId) || 0;
+                        const newProgress = (inventory.get(task.targetItemId) as number) || 0;
                         if (currentState.progress !== newProgress || !currentState.completed) {
                            const updatedProgress = Math.min(newProgress, task.targetQuantity);
                            const isCompleted = updatedProgress >= task.targetQuantity;
@@ -86,7 +86,7 @@ export class TaskService {
                 xp: playerState.xp,
                 inventory: inventoryObject,
                 ownedFactories: [...new Set(ownedFactories)],
-                existingTaskIds: this.tasks().map(t => t.id)
+                existingTaskIds: this.tasks().map((t: GameTask) => t.id)
             };
 
             // 2. Call AI Service

@@ -34,6 +34,7 @@ export class FarmService {
   // UI State
   activePickerPlotId = signal<number | null>(null);
   activeFactoryId = signal<number | null>(null);
+  selectedObjectInstanceId = signal<number | null>(null);
   expansionPreview = signal<{ tiles: FarmTile[], cost: number, direction: 'up'|'down'|'left'|'right' } | null>(null);
 
   draggingState = signal<{
@@ -102,15 +103,6 @@ export class FarmService {
     }
     
     // Place initial features
-    // 2x2 Building Pad
-    const padX = START_OFFSET + 3;
-    const padY = START_OFFSET + 3;
-    for (let y = padY; y < padY + 2; y++) {
-        for (let x = padX; x < padX + 2; x++) {
-            grid[y * GRID_WIDTH + x].state = 'building_pad';
-        }
-    }
-    
     // 5 farm plots
     grid[(START_OFFSET + 1) * GRID_WIDTH + (START_OFFSET + 2)].state = 'empty_plot';
     grid[(START_OFFSET + 1) * GRID_WIDTH + (START_OFFSET + 3)].state = 'empty_plot';
@@ -214,6 +206,15 @@ export class FarmService {
   openRecipePickerForFactory(instanceId: number) { this.activeFactoryId.set(instanceId); }
   closeRecipePicker() { this.activeFactoryId.set(null); }
 
+  // Object Selection
+  selectObject(instanceId: number) {
+    this.selectedObjectInstanceId.set(instanceId);
+  }
+
+  deselectObject() {
+    this.selectedObjectInstanceId.set(null);
+  }
+
   // Placeable Object Methods
   buyObject(itemId: string) {
     const item = this.objectService.getItem(itemId);
@@ -269,12 +270,11 @@ export class FarmService {
   }
 
   // Drag and Drop Handlers
-  startDrag(instanceId: number, event: MouseEvent) {
+  startDrag(instanceId: number, event: MouseEvent, objectElement: HTMLElement) {
     const object = this.placedObjects().find(o => o.instanceId === instanceId);
     if (!object) return;
 
-    const target = event.target as HTMLElement;
-    const rect = target.getBoundingClientRect();
+    const rect = objectElement.getBoundingClientRect();
 
     this.draggingState.set({
       object: { ...object },
@@ -320,5 +320,6 @@ export class FarmService {
     }
     
     this.draggingState.set(null);
+    this.deselectObject();
   }
 }
