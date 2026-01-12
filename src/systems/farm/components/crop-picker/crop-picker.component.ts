@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, output, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, output, inject, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CropService } from '../../services/crop.service';
 import { GameStateService } from '../../../player/services/game-state.service';

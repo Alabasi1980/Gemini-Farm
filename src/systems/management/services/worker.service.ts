@@ -4,7 +4,6 @@ import { AnimalService } from '../../farm/services/animal.service';
 import { FactoryService } from '../../production/services/factory.service';
 import { ItemService } from '../../../shared/services/item.service';
 import { GridService } from '../../farm/services/grid.service';
-import { PlacementService } from '../../farm/services/placement.service';
 import { GameClockService } from '../../world/services/game-clock.service';
 import { ObjectService } from '../../farm/services/object.service';
 

@@ -21,7 +21,6 @@ interface NavItem {
 
 @Pipe({ name: 'safeHtml', standalone: true })
 export class SafeHtmlPipe implements PipeTransform {
-  // FIX: Explicitly typed DomSanitizer to fix property access error.
   private sanitizer: DomSanitizer = inject(DomSanitizer);
   transform(value: string): SafeHtml {
     return this.sanitizer.bypassSecurityTrustHtml(value);

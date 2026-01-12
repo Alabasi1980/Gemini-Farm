@@ -12,8 +12,8 @@ import { GameStateService } from '../../../player/services/game-state.service';
 import { GridService } from '../../services/grid.service';
 import { DragDropService } from '../../services/drag-drop.service';
 
-const MIN_ZOOM = 0.3;
-const MAX_ZOOM = 1.5;
+const MIN_ZOOM = 0.4;
+const MAX_ZOOM = 1.8;
 
 @Component({
   selector: 'farm-page',
@@ -42,8 +42,8 @@ export class FarmPageComponent {
   seasonClass = computed(() => `season-${this.season().toLowerCase()}`);
   weatherClass = computed(() => `weather-${this.weather().toLowerCase()}`);
 
-  // Camera State - Default zoomed out further (0.5)
-  scale = signal(0.5);
+  // Camera State
+  scale = signal(0.8);
   translate = signal({ x: 0, y: 0 });
   isPanning = signal(false);
   private panStart = { x: 0, y: 0 };

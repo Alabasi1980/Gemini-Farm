@@ -1,8 +1,6 @@
 @import url('./farm/farm-page.css');
 @import url('./farm/farm-grid.css');
-@import url('./farm/plot.css');
 @import url('./farm/crop-picker.css');
-@import url('./production/production-page.css');
 @import url('./production/recipe-picker.css');
 @import url('./market/market-ticker.css');
 @import url('./management/management-page.css');
