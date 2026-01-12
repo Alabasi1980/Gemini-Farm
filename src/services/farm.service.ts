@@ -49,6 +49,17 @@ export class FarmService {
 
   canAffordExpansion = computed(() => this.gameStateService.state().coins >= this.expansionCost());
   
+  harvestablePlots = computed(() => {
+    this.gameTick(); // Depend on tick
+    return this.plots().filter(p => {
+        if (p.state !== 'planted' || !p.cropId || !p.plantTime) return false;
+        const crop = this.cropService.getCrop(p.cropId);
+        if (!crop) return false;
+        const timeElapsed = Date.now() - p.plantTime;
+        return timeElapsed >= crop.growthTime;
+    });
+  });
+
   // Lifecycle
   constructor() {
     this.initializeGrid();

@@ -14,6 +14,7 @@ const CROPS_DATA: Crop[] = [
       { stage: 2, duration: 4000, asset: '🌾' }, // Grown
       { stage: 3, duration: 0, asset: '🌾' }      // Ready
     ],
+    seasonModifiers: { 'Autumn': 1.2, 'Winter': 0.8 },
   },
   {
     id: 'corn',
@@ -27,6 +28,7 @@ const CROPS_DATA: Crop[] = [
       { stage: 2, duration: 8000, asset: '🌽' },
       { stage: 3, duration: 0, asset: '🌽' }
     ],
+    seasonModifiers: { 'Summer': 1.25, 'Winter': 0.7 },
   },
   {
     id: 'tomato',
@@ -40,6 +42,7 @@ const CROPS_DATA: Crop[] = [
         { stage: 2, duration: 12000, asset: '🍅' },
         { stage: 3, duration: 0, asset: '🍅' }
     ],
+    seasonModifiers: { 'Summer': 1.2, 'Spring': 1.1, 'Autumn': 0.9 },
   },
 ];
 

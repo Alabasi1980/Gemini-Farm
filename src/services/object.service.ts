@@ -30,7 +30,10 @@ const PLACEABLE_ITEMS_DATA: PlaceableItem[] = [
         width: 2,
         height: 2,
         asset: '🏭',
-        recipeIds: ['wheat_to_flour']
+        recipeIds: ['wheat_to_flour'],
+        baseQueueSize: 2,
+        upgradeCost: 500, // Cost to upgrade from level 1 to 2
+        speedPerLevel: 0.1, // 10% speed increase per level
     },
     {
         id: 'barn_red',

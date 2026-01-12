@@ -15,6 +15,11 @@ import { FactoryService } from '../../services/factory.service';
     '[style.z-index]': 'positionStyles().zIndex',
     '[class.is-dragging]': 'isBeingDragged()',
     '[class.pointer-events-auto]': 'true',
+    // Enable smooth transitions only when NOT dragging.
+    // This makes the object animate back smoothly on an invalid drop.
+    '[class.transition-all]': '!isBeingDragged()',
+    '[class.duration-300]': '!isBeingDragged()',
+    '[class.ease-in-out]': '!isBeingDragged()',
   }
 })
 export class PlaceableObjectComponent {
@@ -49,22 +54,30 @@ export class PlaceableObjectComponent {
   });
 
   factoryInfo = computed(() => {
-    // Note: gameTick is already triggered by animalProductionInfo
+    this.gameTick(); // Depend on tick
     if (!this.isFactory()) return null;
 
     const state = this.factoryService.factoryStates().get(this.object().instanceId);
-    if (!state) return null;
+    const config = this.factoryService.getFactoryConfig(this.object().instanceId);
+    if (!state || !config) return null;
     
-    if (state.outputReady) return { isReady: true, progress: 100, isProducing: false };
-    if (!state.activeRecipeId || !state.productionStartTime) return { isReady: false, progress: 0, isProducing: false };
+    if (state.outputReady) {
+        return { isReady: true, progress: 100, isProducing: false, queueCount: state.queue.length, queueSize: config.queueSize };
+    }
 
-    const recipe = this.factoryService.getRecipe(state.activeRecipeId);
-    if (!recipe) return null;
+    if (state.queue.length > 0) {
+        const job = state.queue[0];
+        const recipe = this.factoryService.getRecipe(job.recipeId);
+        if (!recipe) return null;
+        
+        const duration = recipe.duration / config.speedMultiplier;
+        const timeElapsed = Date.now() - job.startTime;
+        const progress = Math.min(100, (timeElapsed / duration) * 100);
+        
+        return { isReady: false, progress, isProducing: true, queueCount: state.queue.length, queueSize: config.queueSize };
+    }
 
-    const timeElapsed = Date.now() - state.productionStartTime;
-    const progress = Math.min(100, (timeElapsed / recipe.duration) * 100);
-
-    return { isReady: false, progress, isProducing: true };
+    return { isReady: false, progress: 0, isProducing: false, queueCount: 0, queueSize: config.queueSize };
   });
 
   displayState = computed(() => {

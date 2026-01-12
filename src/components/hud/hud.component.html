@@ -1,22 +1,35 @@
-<div class="fixed top-0 left-20 right-0 h-16 bg-gray-900/80 backdrop-blur-sm flex items-center justify-between px-6 z-10">
+<div class="fixed top-0 left-20 right-0 h-16 bg-slate-900/80 backdrop-blur-sm flex items-center justify-between px-6 z-10">
   <!-- Left Side: Player Level/XP -->
   <div class="flex items-center space-x-4">
     <div class="relative flex items-center justify-center w-12 h-12 bg-yellow-500/20 rounded-full border-2 border-yellow-500">
       <span class="text-xl font-bold text-yellow-300">{{ playerState().level }}</span>
     </div>
     <div class="flex flex-col">
-      <span class="text-sm font-semibold text-gray-200">Level {{ playerState().level }}</span>
-      <div class="w-40 h-2 bg-gray-700 rounded-full mt-1 overflow-hidden">
+      <span class="text-sm font-semibold text-slate-200">Level {{ playerState().level }}</span>
+      <div class="w-40 h-2 bg-slate-700 rounded-full mt-1 overflow-hidden">
         <div class="h-full bg-yellow-400 rounded-full" [style.width.%]="(playerState().xp / 1000) * 100"></div>
       </div>
-      <span class="text-xs text-gray-400">{{ playerState().xp }} / 1000 XP</span>
+      <span class="text-xs text-slate-400">{{ playerState().xp }} / 1000 XP</span>
+    </div>
+  </div>
+
+  <!-- Center: Game Date/Time -->
+  <div class="flex items-center space-x-4 bg-slate-800/50 px-4 py-2 rounded-full border border-slate-700">
+    <div class="flex items-center space-x-2" [title]="season()">
+      <span class="text-2xl">{{ seasonIcon() }}</span>
+      <span class="font-bold text-lg">{{ season() }}</span>
+    </div>
+    <div class="w-px h-6 bg-slate-600"></div>
+    <div class="flex items-center space-x-2">
+      <span class="font-semibold text-slate-300">Day {{ gameDate().day }}</span>
+      <span class="text-2xl" [title]="weather()">{{ weatherIcon() }}</span>
     </div>
   </div>
 
   <!-- Right Side: Resources -->
   <div class="flex items-center space-x-6">
     <!-- Coins -->
-    <div class="flex items-center space-x-2 bg-gray-800/50 px-4 py-2 rounded-full border border-gray-700">
+    <div class="flex items-center space-x-2 bg-slate-800/50 px-4 py-2 rounded-full border border-slate-700">
       <svg class="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
         <path d="M10 18a8 8 0 100-16 8 8 0 000 16z"></path>
         <path fill-rule="evenodd" clip-rule="evenodd" d="M11.94 13.012c.38-.204.66-.583.66-1.012 0-.629-.507-1.136-1.136-1.136H10V9.728h.591c.629 0 1.136-.507 1.136-1.136s-.507-1.137-1.136-1.137H10V6.32a.5.5 0 00-1 0v.535H8.409c-.63 0-1.137.508-1.137 1.137s.507 1.136 1.137 1.136H9v1.136H8.409c-.63 0-1.137.507-1.137 1.136 0 .429.28.808.66 1.012l-1.05 1.75a.5.5 0 10.858.514L9 13.562V14.5a.5.5 0 001 0v-.938l1.092 1.82a.5.5 0 10.858-.514l-1.05-1.75zM10 10.864h.466c.075 0 .136.061.136.136s-.061.136-.136.136H10v-0.272zm0-2.272H9.534c-.075 0-.137-.06-.137-.136s.062-.136.137-.136H10v.272z" fill="#1F2937"></path>
@@ -24,7 +37,7 @@
       <span class="text-lg font-bold text-white">{{ playerState().coins | number }}</span>
     </div>
     <!-- Storage -->
-    <div class="flex items-center space-x-2 bg-gray-800/50 px-4 py-2 rounded-full border border-gray-700">
+    <div class="flex items-center space-x-2 bg-slate-800/50 px-4 py-2 rounded-full border border-slate-700">
       <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
       <span class="text-lg font-bold text-white">{{ playerState().storage.current }} / {{ playerState().storage.max }}</span>
     </div>

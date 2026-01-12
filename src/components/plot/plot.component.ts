@@ -3,6 +3,7 @@ import { Plot } from '../../types/game.types';
 import { CommonModule } from '@angular/common';
 import { FarmService } from '../../services/farm.service';
 import { CropService } from '../../services/crop.service';
+import { GameClockService } from '../../services/game-clock.service';
 
 @Component({
   selector: 'app-plot',
@@ -15,12 +16,16 @@ export class PlotComponent {
 
   farmService = inject(FarmService);
   cropService = inject(CropService);
+  gameClockService = inject(GameClockService);
   
   showTooltip = signal(false);
-  gameTick = this.farmService.gameTick; // Subscribe to game tick
-
+  
   plotInfo = computed(() => {
-    this.gameTick(); // Re-run computation on each tick
+    // Depend on game tick, season, and weather for re-computation
+    this.farmService.gameTick(); 
+    const season = this.gameClockService.currentSeason();
+    const weather = this.gameClockService.currentWeather();
+    
     const plot = this.plot();
     if (plot.state !== 'planted' || !plot.cropId || !plot.plantTime) {
       return { growthPercent: 0, asset: '', isReady: false };
@@ -29,14 +34,25 @@ export class PlotComponent {
     const crop = this.cropService.getCrop(plot.cropId);
     if (!crop) return { growthPercent: 0, asset: '', isReady: false };
 
+    // Calculate growth modifiers
+    let growthRate = 1.0;
+    // Season modifier
+    growthRate *= crop.seasonModifiers[season] ?? 1.0;
+    // Weather modifier
+    if (weather === 'Rainy') growthRate *= 1.2; // +20%
+    if (weather === 'Snowy') growthRate *= 0.7; // -30%
+    if (weather === 'Stormy') growthRate *= 0.5; // -50%
+    if (weather === 'Sunny') growthRate *= 1.1; // +10%
+
+    const effectiveGrowthTime = crop.growthTime / growthRate;
     const timeElapsed = Date.now() - plot.plantTime;
-    const growthPercent = Math.min(100, (timeElapsed / crop.growthTime) * 100);
+    const growthPercent = Math.min(100, (timeElapsed / effectiveGrowthTime) * 100);
     const isReady = growthPercent >= 100;
 
     let currentAsset = '';
     let timeIntoGrowth = 0;
     for (const stage of crop.growthStages) {
-        timeIntoGrowth += stage.duration;
+        timeIntoGrowth += (stage.duration / growthRate);
         if (timeElapsed < timeIntoGrowth || stage.duration === 0) {
             currentAsset = stage.asset;
             break;

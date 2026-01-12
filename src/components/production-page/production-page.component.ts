@@ -4,13 +4,21 @@ import { FarmService } from '../../services/farm.service';
 import { FactoryService } from '../../services/factory.service';
 import { ObjectService } from '../../services/object.service';
 import { ItemService } from '../../services/item.service';
-import { PlaceableItem } from '../../types/game.types';
+import { PlaceableItem, ProductionJob } from '../../types/game.types';
+import { GameStateService } from '../../services/game-state.service';
 
 interface FactoryDisplayInfo {
+    instanceId: number;
     item: PlaceableItem;
     status: 'Idle' | 'In Progress' | 'Ready to Collect';
     progress: number;
-    recipeName?: string;
+    level: number;
+    queue: ProductionJob[];
+    queueSize: number;
+    upgradeCost: number;
+    canAffordUpgrade: boolean;
+    autoRun: boolean;
+    queuedItems: { asset: string }[];
 }
 
 @Component({
@@ -24,6 +32,7 @@ export class ProductionPageComponent {
     factoryService = inject(FactoryService);
     objectService = inject(ObjectService);
     itemService = inject(ItemService);
+    gameStateService = inject(GameStateService);
 
     gameTick = this.farmService.gameTick;
 
@@ -36,24 +45,57 @@ export class ProductionPageComponent {
         return placedFactories.map(factoryObj => {
             const item = this.objectService.getItem(factoryObj.itemId)!;
             const state = this.factoryService.factoryStates().get(factoryObj.instanceId);
+            const config = this.factoryService.getFactoryConfig(factoryObj.instanceId);
             
-            if (!state) {
-                return { item, status: 'Idle', progress: 0 };
+            if (!state || !config) {
+                // This might happen briefly when a factory is first placed
+                return { 
+                    instanceId: factoryObj.instanceId, item, status: 'Idle', progress: 0, level: 1, 
+                    queue: [], queueSize: 0, upgradeCost: 0, canAffordUpgrade: false, autoRun: false, queuedItems: []
+                };
             }
+            
+            let status: 'Idle' | 'In Progress' | 'Ready to Collect' = 'Idle';
+            let progress = 0;
 
             if (state.outputReady) {
-                return { item, status: 'Ready to Collect', progress: 100 };
+                status = 'Ready to Collect';
+                progress = 100;
+            } else if (state.queue.length > 0) {
+                status = 'In Progress';
+                const job = state.queue[0];
+                const recipe = this.factoryService.getRecipe(job.recipeId)!;
+                const duration = recipe.duration / config.speedMultiplier;
+                const timeElapsed = Date.now() - job.startTime;
+                progress = Math.min(100, (timeElapsed / duration) * 100);
             }
 
-            if (state.activeRecipeId && state.productionStartTime) {
-                const recipe = this.factoryService.getRecipe(state.activeRecipeId)!;
-                const timeElapsed = Date.now() - state.productionStartTime;
-                const progress = Math.min(100, (timeElapsed / recipe.duration) * 100);
-                const outputItemName = this.itemService.getItem(recipe.outputId)?.name || '';
-                return { item, status: 'In Progress', progress, recipeName: `Making ${outputItemName}` };
-            }
+            const queuedItems = state.queue.slice(1).map(job => {
+                const recipe = this.factoryService.getRecipe(job.recipeId)!;
+                return { asset: this.itemService.getItem(recipe.outputId)?.asset || '?' };
+            });
 
-            return { item, status: 'Idle', progress: 0 };
+            return {
+                instanceId: factoryObj.instanceId,
+                item,
+                status,
+                progress,
+                level: state.level,
+                queue: state.queue,
+                queueSize: config.queueSize,
+                upgradeCost: config.upgradeCost,
+                canAffordUpgrade: this.gameStateService.state().coins >= config.upgradeCost,
+                autoRun: state.autoRun,
+                queuedItems
+            };
         });
     });
+
+    upgrade(instanceId: number) {
+        this.factoryService.upgradeFactory(instanceId);
+    }
+
+    toggleAutoRun(instanceId: number) {
+        this.factoryService.toggleAutoRun(instanceId);
+    }
 }

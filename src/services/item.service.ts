@@ -49,4 +49,18 @@ export class ItemService {
         
         return undefined;
     }
+
+    getAllSellableItems(): ItemData[] {
+        const crops = this.cropService.getAllCrops().map(crop => ({
+            id: crop.id,
+            name: crop.name,
+            sellPrice: crop.sellPrice,
+            asset: crop.growthStages[crop.growthStages.length - 1].asset
+        }));
+
+        const products = this.animalService.getAllProducts();
+        const goods = this.factoryService.getAllProcessedGoods();
+        
+        return [...crops, ...products, ...goods];
+    }
 }
