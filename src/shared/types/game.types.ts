@@ -6,15 +6,16 @@ export interface PlayerState {
     max: number;
   };
   inventory: Map<string, number>;
+  expansionsPurchased: number;
 }
 
-export type PlotState = 'locked' | 'empty' | 'planted';
+export type TileState = 'locked' | 'free_space' | 'empty_plot' | 'planted_plot' | 'building_pad';
 
-export interface Plot {
+export interface FarmTile {
   id: number;
   x: number;
   y: number;
-  state: PlotState;
+  state: TileState;
   cropId?: string;
   plantTime?: number;
 }

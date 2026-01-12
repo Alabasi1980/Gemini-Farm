@@ -44,4 +44,34 @@
       (close)="onCloseRecipePicker()">
     </app-recipe-picker>
   }
+
+  <!-- Expansion Preview Modal -->
+  @if (expansionPreview(); as preview) {
+    <div class="fixed inset-0 bg-black/60 z-30 flex items-center justify-center" (click)="onCancelExpansion()">
+        <div class="bg-slate-800 border-2 border-green-500 rounded-lg p-6 shadow-2xl animate-scale-in text-center w-full max-w-sm" (click)="$event.stopPropagation()">
+            <h2 class="text-2xl font-bold text-green-300">Expand Your Farm?</h2>
+            <p class="text-slate-400 mt-2">Unlock a new 1x7 strip of land to grow your farming empire.</p>
+            <div class="my-6 bg-slate-900/50 p-4 rounded-lg">
+                <div class="text-3xl font-bold text-green-400 flex items-center justify-center">
+                    <span class="text-yellow-400 mr-2">C</span> {{ preview.cost | number }}
+                </div>
+            </div>
+            <div class="flex space-x-4">
+                <button (click)="onCancelExpansion()" class="w-full px-6 py-3 rounded-lg font-bold bg-slate-600 hover:bg-slate-700 text-white transition-colors">
+                    Cancel
+                </button>
+                <button 
+                    (click)="onConfirmExpansion()"
+                    [disabled]="gameStateService.state().coins < preview.cost"
+                    class="w-full px-6 py-3 rounded-lg font-bold text-white transition-colors duration-200"
+                    [class]="gameStateService.state().coins >= preview.cost ? 'bg-green-600 hover:bg-green-700' : 'bg-slate-600 cursor-not-allowed'">
+                    Unlock
+                </button>
+            </div>
+             @if (gameStateService.state().coins < preview.cost) {
+              <p class="text-red-400 text-sm mt-3">Not enough coins!</p>
+            }
+        </div>
+    </div>
+  }
 </div>

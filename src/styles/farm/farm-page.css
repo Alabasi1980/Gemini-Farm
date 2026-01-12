@@ -7,26 +7,31 @@
 }
 
 /* --- SEASONS --- */
-/* Default (Spring) - Earthy tones */
+/* Default (Spring) - Pale Green Earth */
 .sky-gradient { background: linear-gradient(to bottom, #87CEEB 0%, #cce7f5 100%); }
 .ground-gradient { 
-    background-color: #6b4f3a; /* Base soil color */
-    background-image: url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%235a3f2a' fill-opacity='0.3' fill-rule='evenodd'%3E%3Cpath d='M5 0h1L0 6V5zM6 5v1H5z'/%3E%3C/g%3E%3C/svg%3E");
+    background-color: #d1fae5; /* Pale green (Tailwind green-100 equivalent) */
+    background-image: 
+        radial-gradient(#86efac 1px, transparent 1px);
+    background-size: 20px 20px;
 }
 
-/* Summer */
+/* Summer - Brighter, warmer green */
 .season-summer .sky-gradient { background: linear-gradient(to bottom, #47abff 0%, #87CEFA 100%); }
-.season-summer .ground-gradient { background-color: #7d5c43; } /* Drier soil */
+.season-summer .ground-gradient { 
+    background-color: #bbf7d0; 
+}
 
-/* Autumn */
+/* Autumn - Faded yellow-green */
 .season-autumn .sky-gradient { background: linear-gradient(to bottom, #ffca7a 0%, #d8ae6b 100%); }
-.season-autumn .ground-gradient { background-color: #8b5a2b; } /* Rich, dark soil */
+.season-autumn .ground-gradient { 
+    background-color: #fef08a; /* Yellowish */
+}
 
 /* Winter */
 .season-winter .sky-gradient { background: linear-gradient(to bottom, #d4e1f2 0%, #a5b7d0 100%); }
 .season-winter .ground-gradient { 
     background: radial-gradient(ellipse at 50% 80%, #ffffff 0%, #f0f4f7 70%, #d4dce2 100%); 
-    background-image: none; /* Remove texture for snow */
 }
 .season-winter .cloud { opacity: 0.2; }
 
@@ -52,14 +57,18 @@
 /* Rainy */
 .weather-rainy .weather-overlay {
     opacity: 1;
-    background-image: linear-gradient(transparent, transparent),
-                      linear-gradient(to bottom, rgba(255,255,255,0.2) 1px, transparent 1px),
-                      linear-gradient(to right, rgba(255,255,255,0.2) 1px, transparent 1px);
-    background-size: 100% 100%, 4px 40px, 40px 4px;
-    animation: rain 0.5s linear infinite;
+    /* Fixed rain texture to look like falling streaks, not grid squares */
+    background-image: linear-gradient(174deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0) 70%, rgba(255,255,255,0.4) 100%);
+    background-size: 6px 40px;
+    animation: rain 0.6s linear infinite;
 }
 .weather-rainy .sky-gradient { filter: brightness(0.7); }
-.weather-rainy .ground-gradient { filter: brightness(0.8); } /* Darken ground when wet */
+.weather-rainy .ground-gradient { filter: brightness(0.8) saturate(1.2); }
+
+@keyframes rain {
+    0% { background-position: 0px 0px; }
+    100% { background-position: 0px 40px; }
+}
 
 /* Snowy */
 .weather-snowy .weather-overlay {

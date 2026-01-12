@@ -8,9 +8,10 @@ import { PlaceableObjectComponent } from '../placeable-object/placeable-object.c
 import { RecipePickerComponent } from '../../../production/components/recipe-picker/recipe-picker.component';
 import { FactoryService } from '../../../production/services/factory.service';
 import { GameClockService } from '../../../world/services/game-clock.service';
+import { GameStateService } from '../../../player/services/game-state.service';
 
-const MIN_ZOOM = 0.4;
-const MAX_ZOOM = 1.8;
+const MIN_ZOOM = 0.3;
+const MAX_ZOOM = 1.5;
 
 @Component({
   selector: 'farm-page',
@@ -23,9 +24,11 @@ export class FarmPageComponent {
   farmService = inject(FarmService);
   factoryService = inject(FactoryService);
   gameClockService = inject(GameClockService);
+  gameStateService = inject(GameStateService);
 
   showCropPicker = this.farmService.activePickerPlotId;
   showRecipePicker = this.farmService.activeFactoryId;
+  expansionPreview = this.farmService.expansionPreview;
 
   // Game clock state
   season = this.gameClockService.currentSeason;
@@ -34,8 +37,8 @@ export class FarmPageComponent {
   seasonClass = computed(() => `season-${this.season().toLowerCase()}`);
   weatherClass = computed(() => `weather-${this.weather().toLowerCase()}`);
 
-  // Camera State
-  scale = signal(0.8);
+  // Camera State - Default zoomed out further (0.5)
+  scale = signal(0.5);
   translate = signal({ x: 0, y: 0 });
   isPanning = signal(false);
   private panStart = { x: 0, y: 0 };
@@ -64,6 +67,14 @@ export class FarmPageComponent {
 
   onCloseRecipePicker() {
       this.farmService.closeRecipePicker();
+  }
+
+  onConfirmExpansion() {
+    this.farmService.confirmExpansion();
+  }
+
+  onCancelExpansion() {
+    this.farmService.cancelExpansion();
   }
 
   // Camera Controls

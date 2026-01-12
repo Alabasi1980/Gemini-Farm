@@ -1,13 +1,22 @@
 import { Injectable, signal, inject, computed } from '@angular/core';
-import { FarmObject, Plot } from '../../../shared/types/game.types';
+import { FarmObject, FarmTile } from '../../../shared/types/game.types';
 import { GameStateService } from '../../player/services/game-state.service';
 import { CropService } from './crop.service';
 import { ObjectService } from './object.service';
 
-const GRID_WIDTH = 12;
-const GRID_HEIGHT = 10;
-const INITIAL_UNLOCKED_PLOTS = 20;
-const PLOTS_PER_EXPANSION = 5;
+// Large grid for an expansive feel
+const GRID_WIDTH = 31;
+const GRID_HEIGHT = 31;
+
+// Initial 7x7 unlocked area
+const START_AREA_SIZE = 7;
+const START_OFFSET = Math.floor((GRID_WIDTH - START_AREA_SIZE) / 2); // Center the area
+
+// Expansion cost formula constants
+const EXPANSION_BASE_COST = 800;
+const EXPANSION_MULTIPLIER = 1.35;
+const EXPANSION_CHUNK_SIZE = 7;
+
 
 @Injectable({
   providedIn: 'root',
@@ -18,44 +27,58 @@ export class FarmService {
   objectService = inject(ObjectService);
 
   // State
-  plots = signal<Plot[]>([]);
+  tiles = signal<FarmTile[]>([]);
   placedObjects = signal<FarmObject[]>([]);
   gameTick = signal<number>(Date.now());
   
   // UI State
   activePickerPlotId = signal<number | null>(null);
   activeFactoryId = signal<number | null>(null);
+  expansionPreview = signal<{ tiles: FarmTile[], cost: number, direction: 'up'|'down'|'left'|'right' } | null>(null);
+
   draggingState = signal<{
-    object: FarmObject; // A copy of the object at drag start
+    object: FarmObject;
     originalX: number;
     originalY: number;
     validPosition: boolean;
-    currentX: number; // current grid X
-    currentY: number; // current grid Y
-    offsetX: number; // mouse offset within the element
+    currentX: number;
+    currentY: number;
+    offsetX: number;
     offsetY: number;
   } | null>(null);
 
   private nextInstanceId = signal(0);
   
   // Computed State
-  unlockedPlotCount = computed(() => this.plots().filter(p => p.state !== 'locked').length);
+  unlockedBounds = computed(() => {
+    const unlocked = this.tiles().filter(t => t.state !== 'locked');
+    if (unlocked.length === 0) return { minX: 0, maxX: 0, minY: 0, maxY: 0 };
+    
+    let minX = GRID_WIDTH, maxX = 0, minY = GRID_HEIGHT, maxY = 0;
+    for (const tile of unlocked) {
+        if (tile.x < minX) minX = tile.x;
+        if (tile.x > maxX) maxX = tile.x;
+        if (tile.y < minY) minY = tile.y;
+        if (tile.y > maxY) maxY = tile.y;
+    }
+    return { minX, maxX, minY, maxY };
+  });
 
   expansionCost = computed(() => {
-    // FIX: Corrected typo from `unlockedCount` to `unlockedPlotCount`.
-    const unlockedCount = this.unlockedPlotCount();
-    return 100 * Math.floor(unlockedCount / PLOTS_PER_EXPANSION) ** 2 + 250;
+    const expansionsPurchased = this.gameStateService.state().expansionsPurchased;
+    const cost = EXPANSION_BASE_COST * (EXPANSION_MULTIPLIER ** expansionsPurchased);
+    return Math.round(cost / 10) * 10; // Round to nearest 10
   });
 
   canAffordExpansion = computed(() => this.gameStateService.state().coins >= this.expansionCost());
   
   harvestablePlots = computed(() => {
     this.gameTick(); // Depend on tick
-    return this.plots().filter(p => {
-        if (p.state !== 'planted' || !p.cropId || !p.plantTime) return false;
-        const crop = this.cropService.getCrop(p.cropId);
+    return this.tiles().filter(t => {
+        if (t.state !== 'planted_plot' || !t.cropId || !t.plantTime) return false;
+        const crop = this.cropService.getCrop(t.cropId);
         if (!crop) return false;
-        const timeElapsed = Date.now() - p.plantTime;
+        const timeElapsed = Date.now() - t.plantTime;
         return timeElapsed >= crop.growthTime;
     });
   });
@@ -68,55 +91,124 @@ export class FarmService {
 
   // Grid & Plot Methods
   private initializeGrid() {
-    const grid: Plot[] = [];
+    const grid: FarmTile[] = [];
     for (let y = 0; y < GRID_HEIGHT; y++) {
       for (let x = 0; x < GRID_WIDTH; x++) {
         const id = y * GRID_WIDTH + x;
-        const isUnlocked = id < INITIAL_UNLOCKED_PLOTS;
-        grid.push({ id, x, y, state: isUnlocked ? 'empty' : 'locked' });
+        const isUnlocked = x >= START_OFFSET && x < START_OFFSET + START_AREA_SIZE &&
+                           y >= START_OFFSET && y < START_OFFSET + START_AREA_SIZE;
+        grid.push({ id, x, y, state: isUnlocked ? 'free_space' : 'locked' });
       }
     }
-    this.plots.set(grid);
+    
+    // Place initial features
+    // 2x2 Building Pad
+    const padX = START_OFFSET + 3;
+    const padY = START_OFFSET + 3;
+    for (let y = padY; y < padY + 2; y++) {
+        for (let x = padX; x < padX + 2; x++) {
+            grid[y * GRID_WIDTH + x].state = 'building_pad';
+        }
+    }
+    
+    // 5 farm plots
+    grid[(START_OFFSET + 1) * GRID_WIDTH + (START_OFFSET + 2)].state = 'empty_plot';
+    grid[(START_OFFSET + 1) * GRID_WIDTH + (START_OFFSET + 3)].state = 'empty_plot';
+    grid[(START_OFFSET + 1) * GRID_WIDTH + (START_OFFSET + 4)].state = 'empty_plot';
+    grid[(START_OFFSET + 2) * GRID_WIDTH + (START_OFFSET + 2)].state = 'empty_plot';
+    grid[(START_OFFSET + 2) * GRID_WIDTH + (START_OFFSET + 4)].state = 'empty_plot';
+
+    this.tiles.set(grid);
   }
 
-  unlockNextPlots() {
-    if (!this.canAffordExpansion()) return;
-    this.gameStateService.state.update(s => ({...s, coins: s.coins - this.expansionCost()}));
-    this.plots.update(currentPlots => {
-        const plotsToUnlock = currentPlots.filter(p => p.state === 'locked').slice(0, PLOTS_PER_EXPANSION);
-        const plotIdsToUnlock = new Set(plotsToUnlock.map(p => p.id));
-        return currentPlots.map(p => plotIdsToUnlock.has(p.id) ? { ...p, state: 'empty' } : p);
-    });
+  requestExpansionPreview(tile: FarmTile) {
+      if (tile.state !== 'locked') return;
+      const bounds = this.unlockedBounds();
+      let tilesToUnlock: FarmTile[] = [];
+      let direction: 'up'|'down'|'left'|'right' | null = null;
+      
+      // Determine direction and tiles
+      if (tile.x === bounds.minX - 1 && tile.y >= bounds.minY && tile.y <= bounds.maxY) {
+          direction = 'left';
+          for (let i = 0; i < EXPANSION_CHUNK_SIZE; i++) {
+              tilesToUnlock.push(this.tiles()[(bounds.minY + i) * GRID_WIDTH + (bounds.minX - 1)]);
+          }
+      } else if (tile.x === bounds.maxX + 1 && tile.y >= bounds.minY && tile.y <= bounds.maxY) {
+          direction = 'right';
+          for (let i = 0; i < EXPANSION_CHUNK_SIZE; i++) {
+              tilesToUnlock.push(this.tiles()[(bounds.minY + i) * GRID_WIDTH + (bounds.maxX + 1)]);
+          }
+      } else if (tile.y === bounds.minY - 1 && tile.x >= bounds.minX && tile.x <= bounds.maxX) {
+          direction = 'up';
+          for (let i = 0; i < EXPANSION_CHUNK_SIZE; i++) {
+              tilesToUnlock.push(this.tiles()[(bounds.minY - 1) * GRID_WIDTH + (bounds.minX + i)]);
+          }
+      } else if (tile.y === bounds.maxY + 1 && tile.x >= bounds.minX && tile.x <= bounds.maxX) {
+          direction = 'down';
+           for (let i = 0; i < EXPANSION_CHUNK_SIZE; i++) {
+              tilesToUnlock.push(this.tiles()[(bounds.maxY + 1) * GRID_WIDTH + (bounds.minX + i)]);
+          }
+      }
+
+      if (tilesToUnlock.length > 0 && direction) {
+          this.expansionPreview.set({ tiles: tilesToUnlock, cost: this.expansionCost(), direction });
+      }
+  }
+
+  confirmExpansion() {
+      if (!this.canAffordExpansion() || !this.expansionPreview()) return;
+      const cost = this.expansionCost();
+      const tilesToUnlock = this.expansionPreview()!.tiles;
+      const tileIdsToUnlock = new Set(tilesToUnlock.map(t => t.id));
+
+      // 1. Deduct cost & increment counter
+      this.gameStateService.state.update(s => ({
+          ...s, 
+          coins: s.coins - cost,
+          expansionsPurchased: s.expansionsPurchased + 1,
+      }));
+
+      // 2. Update tiles
+      this.tiles.update(currentTiles => 
+          currentTiles.map(t => tileIdsToUnlock.has(t.id) ? { ...t, state: 'free_space' } : t)
+      );
+      
+      // 3. Close preview
+      this.expansionPreview.set(null);
+  }
+
+  cancelExpansion() {
+      this.expansionPreview.set(null);
   }
 
   // Crop Methods
-  plantCrop(plotId: number, cropId: string) {
+  plantCrop(tileId: number, cropId: string) {
     const crop = this.cropService.getCrop(cropId);
     if (!crop || this.gameStateService.state().coins < crop.plantCost) return;
 
     this.gameStateService.state.update(s => ({...s, coins: s.coins - crop.plantCost}));
-    this.plots.update(plots => plots.map(p => 
-        p.id === plotId 
-            ? { ...p, state: 'planted', cropId: cropId, plantTime: Date.now() } 
-            : p
+    this.tiles.update(tiles => tiles.map(t => 
+        t.id === tileId 
+            ? { ...t, state: 'planted_plot', cropId: cropId, plantTime: Date.now() } 
+            : t
     ));
     this.activePickerPlotId.set(null);
   }
 
-  harvestPlot(plotId: number) {
-      const plot = this.plots().find(p => p.id === plotId);
-      if (!plot || !plot.cropId) return;
+  harvestPlot(tileId: number) {
+      const tile = this.tiles().find(t => t.id === tileId);
+      if (!tile || !tile.cropId) return;
 
-      if (this.gameStateService.addToInventory(plot.cropId, 1)) {
-          this.plots.update(plots => plots.map(p => 
-              p.id === plotId
-                  ? { ...p, state: 'empty', cropId: undefined, plantTime: undefined }
-                  : p
+      if (this.gameStateService.addToInventory(tile.cropId, 1)) {
+          this.tiles.update(tiles => tiles.map(t => 
+              t.id === tileId
+                  ? { ...t, state: 'empty_plot', cropId: undefined, plantTime: undefined }
+                  : t
           ));
       }
   }
 
-  openPickerForPlot(plotId: number) { this.activePickerPlotId.set(plotId); }
+  openPickerForPlot(tileId: number) { this.activePickerPlotId.set(tileId); }
   closePicker() { this.activePickerPlotId.set(null); }
 
   openRecipePickerForFactory(instanceId: number) { this.activeFactoryId.set(instanceId); }
@@ -147,12 +239,12 @@ export class FarmService {
     const item = this.objectService.getItem(objectToPlace.itemId);
     if (!item) return false;
 
-    // 1. Bounds Check (ensure all tiles it covers are unlocked)
+    // 1. Bounds Check (ensure all tiles it covers are on buildable land)
     for (let y = objectToPlace.y; y < objectToPlace.y + item.height; y++) {
       for (let x = objectToPlace.x; x < objectToPlace.x + item.width; x++) {
         if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return false;
-        const plot = this.plots()[y * GRID_WIDTH + x];
-        if (!plot || plot.state === 'locked') return false;
+        const tile = this.tiles()[y * GRID_WIDTH + x];
+        if (!tile || tile.state === 'locked' || tile.state === 'empty_plot' || tile.state === 'planted_plot') return false;
       }
     }
 
@@ -226,7 +318,6 @@ export class FarmService {
         o.instanceId === state.object.instanceId ? { ...o, x: state.currentX, y: state.currentY } : o
       ));
     }
-    // else it reverts visually automatically by clearing the drag state.
     
     this.draggingState.set(null);
   }

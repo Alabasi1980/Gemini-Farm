@@ -18,15 +18,9 @@ export class ShopPageComponent {
   objectService = inject(ObjectService);
 
   playerCoins = this.gameStateService.state().coins;
-  expansionCost = this.farmService.expansionCost;
-  canAffordExpansion = this.farmService.canAffordExpansion;
   availableCrops = this.cropService.getAllCrops();
   placeableItems = this.objectService.getAllItems();
   
-  buyExpansion() {
-    this.farmService.unlockNextPlots();
-  }
-
   buyObject(itemId: string) {
     this.farmService.buyObject(itemId);
   }

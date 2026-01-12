@@ -1,22 +1,22 @@
 <div class="p-4 md:p-8">
-  <div class="relative w-[2000px] aspect-[12/10]">
+  <div class="relative w-[3000px] aspect-square">
     <div class="iso-container">
-      <!-- Plot Grid -->
-      <div class="grid grid-cols-12 grid-rows-10 gap-2 h-full">
-        @for (plot of plots(); track plot.id) {
-          <app-plot [plot]="plot"></app-plot>
+      <!-- Tile Grid - Updated for 31x31 -->
+      <div class="grid grid-cols-[repeat(31,minmax(0,1fr))] grid-rows-[repeat(31,minmax(0,1fr))] gap-1 h-full">
+        @for (tile of plots(); track tile.id) {
+          <app-plot [plot]="tile"></app-plot>
         }
       </div>
       
-      <!-- Object Grid -->
-      <div class="absolute inset-0 grid grid-cols-12 grid-rows-10 gap-2 pointer-events-none">
+      <!-- Object Grid - Updated for 31x31 -->
+      <div class="absolute inset-0 grid grid-cols-[repeat(31,minmax(0,1fr))] grid-rows-[repeat(31,minmax(0,1fr))] gap-1 pointer-events-none">
         @for (object of placedObjects(); track object.instanceId) {
             <app-placeable-object [object]="object"></app-placeable-object>
         }
       </div>
 
-      <!-- Worker Layer -->
-      <div class="absolute inset-0 grid grid-cols-12 grid-rows-10 gap-2 pointer-events-none">
+      <!-- Worker Layer - Updated for 31x31 -->
+      <div class="absolute inset-0 grid grid-cols-[repeat(31,minmax(0,1fr))] grid-rows-[repeat(31,minmax(0,1fr))] gap-1 pointer-events-none">
         @for (worker of workers(); track worker.id) {
           <app-worker [worker]="worker"></app-worker>
         }

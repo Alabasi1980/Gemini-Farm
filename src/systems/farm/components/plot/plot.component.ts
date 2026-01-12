@@ -1,24 +1,22 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
-import { Plot } from '../../../../shared/types/game.types';
+import { FarmTile } from '../../../../shared/types/game.types';
 import { CommonModule } from '@angular/common';
 import { FarmService } from '../../services/farm.service';
 import { CropService } from '../../services/crop.service';
 import { GameClockService } from '../../../world/services/game-clock.service';
 
 @Component({
-  selector: 'app-plot',
+  selector: 'app-plot', // Selector remains app-plot to avoid breaking parent components
   templateUrl: './plot.component.html',
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlotComponent {
-  plot = input.required<Plot>();
+  plot = input.required<FarmTile>();
 
   farmService = inject(FarmService);
   cropService = inject(CropService);
   gameClockService = inject(GameClockService);
-  
-  showTooltip = signal(false);
   
   plotInfo = computed(() => {
     // Depend on game tick, season, and weather for re-computation
@@ -26,26 +24,25 @@ export class PlotComponent {
     const season = this.gameClockService.currentSeason();
     const weather = this.gameClockService.currentWeather();
     
-    const plot = this.plot();
-    if (plot.state !== 'planted' || !plot.cropId || !plot.plantTime) {
+    const tile = this.plot();
+    if (tile.state !== 'planted_plot' || !tile.cropId || !tile.plantTime) {
       return { growthPercent: 0, asset: '', isReady: false };
     }
     
-    const crop = this.cropService.getCrop(plot.cropId);
+    const crop = this.cropService.getCrop(tile.cropId);
     if (!crop) return { growthPercent: 0, asset: '', isReady: false };
 
     // Calculate growth modifiers
     let growthRate = 1.0;
-    // Season modifier
     growthRate *= crop.seasonModifiers[season] ?? 1.0;
-    // Weather modifier
-    if (weather === 'Rainy') growthRate *= 1.2; // +20%
-    if (weather === 'Snowy') growthRate *= 0.7; // -30%
-    if (weather === 'Stormy') growthRate *= 0.5; // -50%
-    if (weather === 'Sunny') growthRate *= 1.1; // +10%
+    if (weather === 'Rainy') growthRate *= 1.2;
+    if (weather === 'Snowy') growthRate *= 0.7;
+    if (weather === 'Stormy') growthRate *= 0.5;
+    if (weather === 'Sunny') growthRate *= 1.1;
+    if (weather === 'Windy') growthRate *= 0.9;
 
     const effectiveGrowthTime = crop.growthTime / growthRate;
-    const timeElapsed = Date.now() - plot.plantTime;
+    const timeElapsed = Date.now() - tile.plantTime;
     const growthPercent = Math.min(100, (timeElapsed / effectiveGrowthTime) * 100);
     const isReady = growthPercent >= 100;
 
@@ -63,18 +60,20 @@ export class PlotComponent {
   });
 
   onClick() {
-    const p = this.plot();
-    if (p.state === 'locked') {
-      this.triggerTooltip();
-    } else if (p.state === 'empty') {
-      this.farmService.openPickerForPlot(p.id);
-    } else if (p.state === 'planted' && this.plotInfo().isReady) {
-      this.farmService.harvestPlot(p.id);
+    const tile = this.plot();
+    switch(tile.state) {
+      case 'locked':
+        this.farmService.requestExpansionPreview(tile);
+        break;
+      case 'empty_plot':
+        this.farmService.openPickerForPlot(tile.id);
+        break;
+      case 'planted_plot':
+        if (this.plotInfo().isReady) {
+            this.farmService.harvestPlot(tile.id);
+        }
+        break;
+      // Other cases do nothing on click
     }
-  }
-
-  private triggerTooltip() {
-    this.showTooltip.set(true);
-    setTimeout(() => this.showTooltip.set(false), 2000);
   }
 }

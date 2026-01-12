@@ -17,7 +17,7 @@ export class FarmGridComponent {
   farmService = inject(FarmService);
   workerService = inject(WorkerService);
   
-  plots = this.farmService.plots;
+  plots = this.farmService.tiles; // Renamed from plots to tiles
   placedObjects = this.farmService.placedObjects;
   workers = this.workerService.workers;
 }

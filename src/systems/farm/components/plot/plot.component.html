@@ -1,40 +1,37 @@
 <div 
-  class="relative aspect-square rounded-lg transition-all duration-200 cursor-pointer group transform hover:-translate-y-2 border-b-[14px] shadow-inner"
-  [class]="{
-    'bg-gradient-to-br from-stone-600 to-stone-700 border-stone-800 hover:from-stone-500 hover:to-stone-600': plot().state === 'locked',
-    'bg-gradient-to-br from-amber-800 via-yellow-950 to-amber-900 border-yellow-950 hover:from-amber-700 hover:to-amber-800': plot().state === 'empty',
-    'bg-yellow-950/80 border-black/50': plot().state === 'planted',
-    'animate-pulse !border-yellow-400': plotInfo().isReady
-  }"
+  class="relative aspect-square transition-all duration-200 group transform"
   (click)="onClick()">
-  
-  <div class="un-transform absolute inset-0 flex items-center justify-center">
-    @if (plot().state === 'locked') {
-      <div class="opacity-50 group-hover:opacity-100 transition-opacity">
-        <svg class="w-8 h-8 text-slate-800/50" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd"></path></svg>
+
+  @switch (plot().state) {
+    @case ('locked') {
+      <div class="w-full h-full bg-slate-800/60 flex items-center justify-center rounded-sm cursor-pointer hover:bg-slate-700/60">
+        <svg class="w-6 h-6 text-slate-500/80" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd"></path></svg>
       </div>
     }
-
-    @if (plot().state === 'planted') {
-      <div class="absolute inset-0 flex flex-col items-center justify-center">
-        <span class="text-4xl drop-shadow-lg">{{ plotInfo().asset }}</span>
-        @if (!plotInfo().isReady) {
-          <div class="absolute bottom-1 w-10/12 h-1.5 bg-black/50 rounded-full overflow-hidden">
-              <div class="h-full bg-green-400" [style.width.%]="plotInfo().growthPercent"></div>
+    @case ('free_space') {
+      <div class="w-full h-full"></div>
+    }
+    @case ('building_pad') {
+      <div class="w-full h-full bg-gradient-to-br from-slate-500 to-slate-600 rounded-sm shadow-inner border border-slate-700"></div>
+    }
+    @case ('empty_plot') {
+       <div class="w-full h-full rounded-sm cursor-pointer hover:-translate-y-1 bg-gradient-to-br from-amber-700 to-orange-800 shadow-md border-b-4 border-amber-900"></div>
+    }
+    @case ('planted_plot') {
+      <div class="w-full h-full rounded-sm cursor-pointer hover:-translate-y-1 bg-gradient-to-br from-yellow-950 to-orange-950 shadow-md border-b-4 border-black/50"
+        [class]="{ 'animate-pulse !border-yellow-400': plotInfo().isReady }">
+          <div class="un-transform absolute inset-0 flex flex-col items-center justify-center">
+            <span class="text-3xl drop-shadow-md">{{ plotInfo().asset }}</span>
+            @if (!plotInfo().isReady) {
+              <div class="absolute bottom-1 w-10/12 h-1 bg-black/40 rounded-full overflow-hidden">
+                  <div class="h-full bg-yellow-400" [style.width.%]="plotInfo().growthPercent"></div>
+              </div>
+            } @else {
+              <div class="absolute -top-2 -right-2 text-xl animate-bounce">✨</div>
+            }
           </div>
-        } @else {
-          <div class="absolute -top-2 -right-2 text-2xl animate-bounce">✨</div>
-        }
       </div>
     }
-  </div>
-
-  @if (showTooltip()) {
-    <div class="un-transform absolute -top-2 left-1/2 -translate-x-1/2">
-      <div class="absolute top-0 left-0 bg-slate-900 text-white text-sm px-3 py-1 rounded-md shadow-lg whitespace-nowrap animate-fade-in-out z-10">
-        Unlock to expand
-      </div>
-    </div>
   }
 
 </div>

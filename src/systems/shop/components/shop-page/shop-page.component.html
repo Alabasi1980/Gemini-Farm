@@ -40,27 +40,5 @@
         }
       </div>
     </div>
-    
-    <!-- Farm Land -->
-    <div>
-      <h2 class="text-2xl font-semibold mb-4 text-green-300">Farm Land</h2>
-      <div class="bg-slate-800 border border-slate-700 rounded-lg p-6 flex flex-col items-center text-center max-w-sm mx-auto">
-        <h3 class="text-2xl font-bold text-white mb-2">Farm Expansion</h3>
-        <p class="text-slate-400 mb-4">Unlock the next 5 plots to expand your farming empire.</p>
-        <div class="text-3xl font-bold text-green-400 mb-6 flex items-center">
-          <span class="text-yellow-400 mr-2">C</span> {{ expansionCost() | number }}
-        </div>
-        <button 
-          (click)="buyExpansion()"
-          [disabled]="!canAffordExpansion()"
-          class="w-full px-6 py-3 rounded-lg font-bold text-white transition-colors duration-200"
-          [class]="canAffordExpansion() ? 'bg-green-600 hover:bg-green-700' : 'bg-slate-600 cursor-not-allowed'">
-            Expand Farm
-        </button>
-        @if (!canAffordExpansion()) {
-          <p class="text-red-400 text-sm mt-2">Not enough coins!</p>
-        }
-      </div>
-    </div>
   </div>
 </div>

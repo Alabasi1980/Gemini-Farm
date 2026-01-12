@@ -11,10 +11,10 @@ interface GameDate {
 }
 
 const SEASON_WEATHER_PROBABILITY: Record<Season, Record<Weather, number>> = {
-    Spring: { Sunny: 0.4, Cloudy: 0.3, Rainy: 0.3, Snowy: 0, Windy: 0, Stormy: 0 },
-    Summer: { Sunny: 0.7, Cloudy: 0.2, Rainy: 0.1, Snowy: 0, Windy: 0, Stormy: 0 },
-    Autumn: { Sunny: 0.3, Cloudy: 0.4, Rainy: 0.2, Windy: 0.1, Snowy: 0, Stormy: 0 },
-    Winter: { Sunny: 0.2, Cloudy: 0.4, Rainy: 0.1, Snowy: 0.3, Windy: 0, Stormy: 0 },
+    Spring: { Sunny: 0.4, Cloudy: 0.25, Rainy: 0.3, Stormy: 0.05, Windy: 0, Snowy: 0 },
+    Summer: { Sunny: 0.6, Cloudy: 0.2, Rainy: 0.1, Stormy: 0.1, Windy: 0, Snowy: 0 },
+    Autumn: { Sunny: 0.3, Cloudy: 0.3, Rainy: 0.2, Windy: 0.15, Stormy: 0.05, Snowy: 0 },
+    Winter: { Sunny: 0.2, Cloudy: 0.4, Rainy: 0.1, Snowy: 0.25, Windy: 0.05, Stormy: 0 },
 };
 
 @Injectable({
@@ -63,6 +63,7 @@ export class GameClockService {
         let cumulative = 0;
 
         for (const [weather, prob] of Object.entries(probabilities)) {
+            if (prob === 0) continue;
             cumulative += prob;
             if (rand < cumulative) {
                 this.currentWeather.set(weather as Weather);

@@ -9,6 +9,7 @@ const INITIAL_STATE: PlayerState = {
     max: 50,
   },
   inventory: new Map<string, number>(),
+  expansionsPurchased: 0,
 };
 
 @Injectable({
