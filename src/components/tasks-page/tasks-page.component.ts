@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TaskService } from '../../services/task.service';
@@ -45,3 +46,18 @@ export class TasksPageComponent {
         this.taskService.claimReward(taskId);
     }
 }
+=======
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+
+@Component({
+  selector: 'tasks-page',
+  template: `
+    <div class="p-8">
+      <h1 class="text-3xl font-bold text-purple-400">Tasks</h1>
+      <p class="mt-2 text-gray-300">Complete daily tasks for rewards.</p>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class TasksPageComponent {}
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <div class="flex h-screen bg-slate-900">
   <!-- Sidebar Navigation -->
   <aside class="w-20 bg-slate-50 flex flex-col items-center py-4 space-y-4 border-r border-slate-200">
@@ -13,13 +14,30 @@
             <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-green-500 rounded-r-full"></div>
           }
           <div [innerHTML]="item.icon" class="mx-auto"></div>
+=======
+<div class="flex h-screen bg-gray-800">
+  <!-- Sidebar Navigation -->
+  <aside class="w-20 bg-gray-900 flex flex-col items-center py-4 space-y-4">
+    <div class="text-green-400 font-bold text-lg">GF</div>
+    <nav class="flex flex-col items-center space-y-2 mt-8">
+      @for (item of navItems; track item.id) {
+        <button 
+          (click)="changeTab(item.id)"
+          [class]="'p-3 rounded-lg transition-colors duration-200 ' + (activeTab() === item.id ? 'bg-green-600 text-white' : 'text-gray-400 hover:bg-gray-700 hover:text-white')"
+          [title]="item.label">
+          <div [innerHTML]="item.icon"></div>
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
         </button>
       }
     </nav>
   </aside>
 
   <!-- Main Content -->
+<<<<<<< HEAD
   <main class="flex-1 overflow-auto bg-slate-900">
+=======
+  <main class="flex-1 overflow-auto">
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
     @switch (activeTab()) {
       @case ('Farm') {
         <farm-page />
@@ -39,6 +57,7 @@
       @case ('Community') {
         <community-page />
       }
+<<<<<<< HEAD
       @case ('Management') {
         <management-page />
       }
@@ -48,3 +67,11 @@
   <!-- Global Overlays / Tickers -->
   <app-market-ticker></app-market-ticker>
 </div>
+=======
+      @case ('Profile') {
+        <profile-page />
+      }
+    }
+  </main>
+</div>
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396

@@ -3,7 +3,10 @@ import { Plot } from '../../types/game.types';
 import { CommonModule } from '@angular/common';
 import { FarmService } from '../../services/farm.service';
 import { CropService } from '../../services/crop.service';
+<<<<<<< HEAD
 import { GameClockService } from '../../services/game-clock.service';
+=======
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
 
 @Component({
   selector: 'app-plot',
@@ -16,6 +19,7 @@ export class PlotComponent {
 
   farmService = inject(FarmService);
   cropService = inject(CropService);
+<<<<<<< HEAD
   gameClockService = inject(GameClockService);
   
   showTooltip = signal(false);
@@ -26,6 +30,14 @@ export class PlotComponent {
     const season = this.gameClockService.currentSeason();
     const weather = this.gameClockService.currentWeather();
     
+=======
+  
+  showTooltip = signal(false);
+  gameTick = this.farmService.gameTick; // Subscribe to game tick
+
+  plotInfo = computed(() => {
+    this.gameTick(); // Re-run computation on each tick
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
     const plot = this.plot();
     if (plot.state !== 'planted' || !plot.cropId || !plot.plantTime) {
       return { growthPercent: 0, asset: '', isReady: false };
@@ -34,6 +46,7 @@ export class PlotComponent {
     const crop = this.cropService.getCrop(plot.cropId);
     if (!crop) return { growthPercent: 0, asset: '', isReady: false };
 
+<<<<<<< HEAD
     // Calculate growth modifiers
     let growthRate = 1.0;
     // Season modifier
@@ -47,12 +60,20 @@ export class PlotComponent {
     const effectiveGrowthTime = crop.growthTime / growthRate;
     const timeElapsed = Date.now() - plot.plantTime;
     const growthPercent = Math.min(100, (timeElapsed / effectiveGrowthTime) * 100);
+=======
+    const timeElapsed = Date.now() - plot.plantTime;
+    const growthPercent = Math.min(100, (timeElapsed / crop.growthTime) * 100);
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
     const isReady = growthPercent >= 100;
 
     let currentAsset = '';
     let timeIntoGrowth = 0;
     for (const stage of crop.growthStages) {
+<<<<<<< HEAD
         timeIntoGrowth += (stage.duration / growthRate);
+=======
+        timeIntoGrowth += stage.duration;
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
         if (timeElapsed < timeIntoGrowth || stage.duration === 0) {
             currentAsset = stage.asset;
             break;
@@ -77,4 +98,8 @@ export class PlotComponent {
     this.showTooltip.set(true);
     setTimeout(() => this.showTooltip.set(false), 2000);
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396

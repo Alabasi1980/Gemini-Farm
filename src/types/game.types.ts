@@ -26,9 +26,12 @@ export interface CropGrowthStage {
   asset: string; // e.g., emoji or image path
 }
 
+<<<<<<< HEAD
 export type Season = 'Spring' | 'Summer' | 'Autumn' | 'Winter';
 export type Weather = 'Sunny' | 'Cloudy' | 'Rainy' | 'Snowy' | 'Windy' | 'Stormy';
 
+=======
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
 export interface Crop {
   id: string;
   name: string;
@@ -36,7 +39,10 @@ export interface Crop {
   sellPrice: number;
   growthTime: number; // total ms for full growth
   growthStages: CropGrowthStage[];
+<<<<<<< HEAD
   seasonModifiers: Partial<Record<Season, number>>;
+=======
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
 }
 
 // Object types
@@ -50,6 +56,7 @@ export interface PlaceableItem {
   width: number; // in grid cells
   height: number; // in grid cells
   asset: string; // emoji
+<<<<<<< HEAD
   // Optional properties for specific types
   producesProductId?: string;
   productionTime?: number; // ms
@@ -57,6 +64,12 @@ export interface PlaceableItem {
   baseQueueSize?: number;
   upgradeCost?: number;
   speedPerLevel?: number; // e.g., 0.1 for 10%
+=======
+  // Optional properties
+  producesProductId?: string;
+  productionTime?: number; // ms
+  recipeIds?: string[];
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
 }
 
 export interface FarmObject {
@@ -81,7 +94,11 @@ export interface AnimalBuildingState {
 
 // Factory-related types
 export interface Recipe {
+<<<<<<< HEAD
     id:string;
+=======
+    id: string;
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
     name: string;
     duration: number; // ms
     inputs: Map<string, number>; // itemId -> quantity
@@ -96,6 +113,7 @@ export interface ProcessedGood {
     asset: string;
 }
 
+<<<<<<< HEAD
 export interface ProductionJob {
     jobId: number;
     recipeId: string;
@@ -173,6 +191,15 @@ export interface Worker {
 }
 
 
+=======
+export interface FactoryState {
+    instanceId: number;
+    activeRecipeId: string | null;
+    productionStartTime: number | null;
+    outputReady: boolean;
+}
+
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
 // Generic type for displaying items in inventory
 export interface DisplayItem {
     id: string;
@@ -180,4 +207,8 @@ export interface DisplayItem {
     sellPrice: number;
     asset: string;
     quantity: number;
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396

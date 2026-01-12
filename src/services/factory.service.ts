@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 import { Injectable, inject, signal, effect, computed } from '@angular/core';
 import { FactoryState, ProcessedGood, Recipe, ProductionJob } from '../types/game.types';
+=======
+import { Injectable, inject, signal, effect } from '@angular/core';
+import { FactoryState, ProcessedGood, Recipe } from '../types/game.types';
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
 import { GameStateService } from './game-state.service';
 import { FarmService } from './farm.service';
 import { ObjectService } from './object.service';
@@ -27,6 +32,7 @@ export class FactoryService {
 
     private goods = new Map<string, ProcessedGood>(PROCESSED_GOODS_DATA.map(g => [g.id, g]));
     private recipes = new Map<string, Recipe>(RECIPES_DATA.map(r => [r.id, r]));
+<<<<<<< HEAD
     private nextJobId = 0;
 
     factoryStates = signal<Map<number, FactoryState>>(new Map());
@@ -44,6 +50,11 @@ export class FactoryService {
         return collectable;
     });
 
+=======
+
+    factoryStates = signal<Map<number, FactoryState>>(new Map());
+
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
     constructor() {
         // Listen to game tick to update production progress
         effect(() => {
@@ -52,6 +63,7 @@ export class FactoryService {
                 const newStates = new Map(currentStates);
                 let changed = false;
                 for (const [id, state] of newStates.entries()) {
+<<<<<<< HEAD
                     if (state.queue.length > 0 && !state.outputReady) {
                         const job = state.queue[0];
                         const recipe = this.getRecipe(job.recipeId);
@@ -60,6 +72,13 @@ export class FactoryService {
                             const duration = recipe.duration / factory.speedMultiplier;
                             const timeElapsed = Date.now() - job.startTime;
                             if (timeElapsed >= duration) {
+=======
+                    if (state.activeRecipeId && state.productionStartTime && !state.outputReady) {
+                        const recipe = this.getRecipe(state.activeRecipeId);
+                        if (recipe) {
+                            const timeElapsed = Date.now() - state.productionStartTime;
+                            if (timeElapsed >= recipe.duration) {
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
                                 newStates.set(id, { ...state, outputReady: true });
                                 changed = true;
                             }
@@ -77,6 +96,7 @@ export class FactoryService {
             
             this.factoryStates.update(currentStates => {
                 const newStates = new Map(currentStates);
+<<<<<<< HEAD
                 const factoryIds = new Set(factories.map(f => f.instanceId));
 
                 for (const factory of factories) {
@@ -88,11 +108,27 @@ export class FactoryService {
                             outputReady: false,
                             autoRun: false,
                             lastRecipeId: null
+=======
+                const currentIds = new Set(currentStates.keys());
+                const factoryIds = new Set(factories.map(f => f.instanceId));
+
+                for (const factory of factories) {
+                    if (!currentIds.has(factory.instanceId)) {
+                        newStates.set(factory.instanceId, {
+                            instanceId: factory.instanceId,
+                            activeRecipeId: null,
+                            productionStartTime: null,
+                            outputReady: false
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
                         });
                     }
                 }
                 
+<<<<<<< HEAD
                 for (const id of currentStates.keys()) {
+=======
+                for (const id of currentIds) {
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
                     if (!factoryIds.has(id)) {
                         newStates.delete(id);
                     }
@@ -104,6 +140,7 @@ export class FactoryService {
 
     getRecipe(id: string): Recipe | undefined { return this.recipes.get(id); }
     getProcessedGood(id: string): ProcessedGood | undefined { return this.goods.get(id); }
+<<<<<<< HEAD
     getAllProcessedGoods(): ProcessedGood[] { return Array.from(this.goods.values()); }
 
     getFactoryConfig(instanceId: number) {
@@ -120,10 +157,13 @@ export class FactoryService {
             upgradeCost: item.upgradeCost * state.level, // Simple scaling
         };
     }
+=======
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
 
     startProduction(instanceId: number, recipeId: string) {
         const state = this.factoryStates().get(instanceId);
         const recipe = this.getRecipe(recipeId);
+<<<<<<< HEAD
         const config = this.getFactoryConfig(instanceId);
 
         if (!state || !recipe || !config || state.queue.length >= config.queueSize) {
@@ -149,18 +189,41 @@ export class FactoryService {
             return true;
         }
         return false;
+=======
+        if (!state || !recipe || state.activeRecipeId) return;
+
+        if (this.gameStateService.consumeFromInventory(recipe.inputs)) {
+            this.factoryStates.update(states => {
+                const newStates = new Map(states);
+                newStates.set(instanceId, { 
+                    ...state, 
+                    activeRecipeId: recipeId,
+                    productionStartTime: Date.now(),
+                    outputReady: false 
+                });
+                return newStates;
+            });
+        }
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
     }
     
     collect(instanceId: number) {
         const state = this.factoryStates().get(instanceId);
+<<<<<<< HEAD
         if (!state || !state.outputReady || state.queue.length === 0) return;
 
         const job = state.queue[0];
         const recipe = this.getRecipe(job.recipeId);
+=======
+        if (!state || !state.outputReady || !state.activeRecipeId) return;
+
+        const recipe = this.getRecipe(state.activeRecipeId);
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
         if (!recipe) return;
 
         if (this.gameStateService.addToInventory(recipe.outputId, recipe.outputQuantity)) {
             this.factoryStates.update(states => {
+<<<<<<< HEAD
                 const current = states.get(instanceId)!;
                 const newQueue = current.queue.slice(1);
                 
@@ -180,10 +243,20 @@ export class FactoryService {
                    setTimeout(() => this.startProduction(instanceId, current.lastRecipeId!), 0);
                 }
 
+=======
+                const newStates = new Map(states);
+                newStates.set(instanceId, { 
+                    ...state, 
+                    activeRecipeId: null,
+                    productionStartTime: null,
+                    outputReady: false 
+                });
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
                 return newStates;
             });
         }
     }
+<<<<<<< HEAD
 
     upgradeFactory(instanceId: number) {
         const config = this.getFactoryConfig(instanceId);
@@ -213,3 +286,6 @@ export class FactoryService {
         });
     }
 }
+=======
+}
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396

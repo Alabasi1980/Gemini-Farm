@@ -49,6 +49,7 @@ export class FarmService {
 
   canAffordExpansion = computed(() => this.gameStateService.state().coins >= this.expansionCost());
   
+<<<<<<< HEAD
   harvestablePlots = computed(() => {
     this.gameTick(); // Depend on tick
     return this.plots().filter(p => {
@@ -60,6 +61,8 @@ export class FarmService {
     });
   });
 
+=======
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
   // Lifecycle
   constructor() {
     this.initializeGrid();
@@ -230,4 +233,8 @@ export class FarmService {
     
     this.draggingState.set(null);
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396

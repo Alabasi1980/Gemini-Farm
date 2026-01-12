@@ -4,6 +4,7 @@ import { FarmService } from '../../services/farm.service';
 import { FactoryService } from '../../services/factory.service';
 import { ObjectService } from '../../services/object.service';
 import { ItemService } from '../../services/item.service';
+<<<<<<< HEAD
 import { PlaceableItem, ProductionJob } from '../../types/game.types';
 import { GameStateService } from '../../services/game-state.service';
 
@@ -19,6 +20,15 @@ interface FactoryDisplayInfo {
     canAffordUpgrade: boolean;
     autoRun: boolean;
     queuedItems: { asset: string }[];
+=======
+import { PlaceableItem } from '../../types/game.types';
+
+interface FactoryDisplayInfo {
+    item: PlaceableItem;
+    status: 'Idle' | 'In Progress' | 'Ready to Collect';
+    progress: number;
+    recipeName?: string;
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
 }
 
 @Component({
@@ -32,7 +42,10 @@ export class ProductionPageComponent {
     factoryService = inject(FactoryService);
     objectService = inject(ObjectService);
     itemService = inject(ItemService);
+<<<<<<< HEAD
     gameStateService = inject(GameStateService);
+=======
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
 
     gameTick = this.farmService.gameTick;
 
@@ -45,6 +58,7 @@ export class ProductionPageComponent {
         return placedFactories.map(factoryObj => {
             const item = this.objectService.getItem(factoryObj.itemId)!;
             const state = this.factoryService.factoryStates().get(factoryObj.instanceId);
+<<<<<<< HEAD
             const config = this.factoryService.getFactoryConfig(factoryObj.instanceId);
             
             if (!state || !config) {
@@ -98,4 +112,26 @@ export class ProductionPageComponent {
     toggleAutoRun(instanceId: number) {
         this.factoryService.toggleAutoRun(instanceId);
     }
+=======
+            
+            if (!state) {
+                return { item, status: 'Idle', progress: 0 };
+            }
+
+            if (state.outputReady) {
+                return { item, status: 'Ready to Collect', progress: 100 };
+            }
+
+            if (state.activeRecipeId && state.productionStartTime) {
+                const recipe = this.factoryService.getRecipe(state.activeRecipeId)!;
+                const timeElapsed = Date.now() - state.productionStartTime;
+                const progress = Math.min(100, (timeElapsed / recipe.duration) * 100);
+                const outputItemName = this.itemService.getItem(recipe.outputId)?.name || '';
+                return { item, status: 'In Progress', progress, recipeName: `Making ${outputItemName}` };
+            }
+
+            return { item, status: 'Idle', progress: 0 };
+        });
+    });
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
 }

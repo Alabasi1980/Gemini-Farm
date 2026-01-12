@@ -15,11 +15,14 @@ import { FactoryService } from '../../services/factory.service';
     '[style.z-index]': 'positionStyles().zIndex',
     '[class.is-dragging]': 'isBeingDragged()',
     '[class.pointer-events-auto]': 'true',
+<<<<<<< HEAD
     // Enable smooth transitions only when NOT dragging.
     // This makes the object animate back smoothly on an invalid drop.
     '[class.transition-all]': '!isBeingDragged()',
     '[class.duration-300]': '!isBeingDragged()',
     '[class.ease-in-out]': '!isBeingDragged()',
+=======
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
   }
 })
 export class PlaceableObjectComponent {
@@ -54,6 +57,7 @@ export class PlaceableObjectComponent {
   });
 
   factoryInfo = computed(() => {
+<<<<<<< HEAD
     this.gameTick(); // Depend on tick
     if (!this.isFactory()) return null;
 
@@ -78,6 +82,24 @@ export class PlaceableObjectComponent {
     }
 
     return { isReady: false, progress: 0, isProducing: false, queueCount: 0, queueSize: config.queueSize };
+=======
+    // Note: gameTick is already triggered by animalProductionInfo
+    if (!this.isFactory()) return null;
+
+    const state = this.factoryService.factoryStates().get(this.object().instanceId);
+    if (!state) return null;
+    
+    if (state.outputReady) return { isReady: true, progress: 100, isProducing: false };
+    if (!state.activeRecipeId || !state.productionStartTime) return { isReady: false, progress: 0, isProducing: false };
+
+    const recipe = this.factoryService.getRecipe(state.activeRecipeId);
+    if (!recipe) return null;
+
+    const timeElapsed = Date.now() - state.productionStartTime;
+    const progress = Math.min(100, (timeElapsed / recipe.duration) * 100);
+
+    return { isReady: false, progress, isProducing: true };
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
   });
 
   displayState = computed(() => {
@@ -118,4 +140,8 @@ export class PlaceableObjectComponent {
         this.factoryService.collect(instanceId);
     }
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396

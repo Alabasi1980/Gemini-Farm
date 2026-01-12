@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { ChangeDetectionStrategy, Component, ElementRef, inject, viewChild, signal, computed } from '@angular/core';
+=======
+import { ChangeDetectionStrategy, Component, ElementRef, inject, viewChild } from '@angular/core';
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
 import { CommonModule } from '@angular/common';
 import { HudComponent } from '../hud/hud.component';
 import { FarmGridComponent } from '../farm-grid/farm-grid.component';
@@ -7,25 +11,41 @@ import { FarmService } from '../../services/farm.service';
 import { PlaceableObjectComponent } from '../placeable-object/placeable-object.component';
 import { RecipePickerComponent } from '../recipe-picker/recipe-picker.component';
 import { FactoryService } from '../../services/factory.service';
+<<<<<<< HEAD
 import { GameClockService } from '../../services/game-clock.service';
 
 const MIN_ZOOM = 0.4;
 const MAX_ZOOM = 1.8;
+=======
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
 
 @Component({
   selector: 'farm-page',
   templateUrl: './farm-page.component.html',
   imports: [CommonModule, HudComponent, FarmGridComponent, CropPickerComponent, PlaceableObjectComponent, RecipePickerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
+<<<<<<< HEAD
+=======
+  host: {
+    '(mousemove)': 'onMouseMove($event)',
+    '(mouseup)': 'onMouseUp()'
+  }
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
 })
 export class FarmPageComponent {
   farmService = inject(FarmService);
   factoryService = inject(FactoryService);
+<<<<<<< HEAD
   gameClockService = inject(GameClockService);
+=======
+
+  farmGrid = viewChild.required(FarmGridComponent, { read: ElementRef });
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
 
   showCropPicker = this.farmService.activePickerPlotId;
   showRecipePicker = this.farmService.activeFactoryId;
 
+<<<<<<< HEAD
   // Game clock state
   season = this.gameClockService.currentSeason;
   weather = this.gameClockService.currentWeather;
@@ -42,6 +62,8 @@ export class FarmPageComponent {
 
   cameraTransform = computed(() => `translate(${this.translate().x}px, ${this.translate().y}px) scale(${this.scale()})`);
   
+=======
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
   onCropSelected(cropId: string) {
     const plotId = this.showCropPicker();
     if (plotId !== null) {
@@ -65,6 +87,7 @@ export class FarmPageComponent {
       this.farmService.closeRecipePicker();
   }
 
+<<<<<<< HEAD
   // Camera Controls
   onWheel(event: WheelEvent) {
     event.preventDefault();
@@ -119,12 +142,25 @@ export class FarmPageComponent {
   onMouseUp(event: MouseEvent) {
     this.isPanning.set(false);
     // Also handle object drop
+=======
+  onMouseMove(event: MouseEvent) {
+    if (this.farmService.draggingState()) {
+      this.farmService.handleDrag(event, this.farmGrid().nativeElement);
+    }
+  }
+
+  onMouseUp() {
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
     if (this.farmService.draggingState()) {
       this.farmService.endDrag();
     }
   }
+<<<<<<< HEAD
 
   onMouseLeave() {
     this.isPanning.set(false);
   }
 }
+=======
+}
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396

@@ -49,6 +49,7 @@ export class ItemService {
         
         return undefined;
     }
+<<<<<<< HEAD
 
     getAllSellableItems(): ItemData[] {
         const crops = this.cropService.getAllCrops().map(crop => ({
@@ -63,4 +64,6 @@ export class ItemService {
         
         return [...crops, ...products, ...goods];
     }
+=======
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
 }

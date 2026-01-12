@@ -1,7 +1,13 @@
+<<<<<<< HEAD
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GameStateService } from '../../services/game-state.service';
 import { GameClockService } from '../../services/game-clock.service';
+=======
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { GameStateService } from '../../services/game-state.service';
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
 
 @Component({
   selector: 'app-hud',
@@ -11,6 +17,7 @@ import { GameClockService } from '../../services/game-clock.service';
 })
 export class HudComponent {
   gameStateService = inject(GameStateService);
+<<<<<<< HEAD
   gameClockService = inject(GameClockService);
 
   playerState = this.gameStateService.state;
@@ -39,3 +46,7 @@ export class HudComponent {
     }
   });
 }
+=======
+  playerState = this.gameStateService.state;
+}
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396

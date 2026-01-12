@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { Injectable, signal, inject, effect, computed } from '@angular/core';
+=======
+import { Injectable, signal, inject, effect } from '@angular/core';
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
 import { AnimalBuildingState, AnimalProduct } from '../types/game.types';
 import { GameStateService } from './game-state.service';
 import { FarmService } from './farm.service';
@@ -18,6 +22,7 @@ export class AnimalService {
     
     productionStates = signal<Map<number, AnimalBuildingState>>(new Map());
 
+<<<<<<< HEAD
     collectableBuildings = computed(() => {
         this.farmService.gameTick(); // Depend on tick
         const collectable = [];
@@ -36,6 +41,8 @@ export class AnimalService {
         return collectable;
     });
 
+=======
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
     constructor() {
         // Effect to automatically add/remove state when animal buildings are placed/removed
         effect(() => {
@@ -72,10 +79,13 @@ export class AnimalService {
         return this.products.get(id);
     }
     
+<<<<<<< HEAD
     getAllProducts(): AnimalProduct[] {
         return Array.from(this.products.values());
     }
 
+=======
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
     collect(instanceId: number) {
         const farmObject = this.farmService.placedObjects().find(o => o.instanceId === instanceId);
         if (!farmObject) return;
@@ -100,4 +110,8 @@ export class AnimalService {
             });
         }
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396

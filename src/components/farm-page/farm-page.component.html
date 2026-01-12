@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <div 
   class="relative h-full w-full overflow-hidden scene-container"
   [class]="[seasonClass(), weatherClass()]"
@@ -7,10 +8,14 @@
   (mouseup)="onMouseUp($event)"
   (mouseleave)="onMouseLeave()">
 
+=======
+<div class="relative h-full w-full overflow-y-auto">
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
   <!-- HUD -->
   <app-hud></app-hud>
 
   <!-- Farm Scene -->
+<<<<<<< HEAD
   <div class="absolute inset-0 sky-gradient transition-colors duration-1000"></div>
   <!-- Weather Effects -->
   <div class="weather-overlay"></div>
@@ -26,6 +31,10 @@
       <div class="interactive-child">
         <app-farm-grid></app-farm-grid>
       </div>
+=======
+  <div class="h-full min-h-screen w-full bg-gradient-to-b from-sky-400 to-green-600 flex flex-col pt-20">
+    <app-farm-grid></app-farm-grid>
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
   </div>
 
   <!-- Crop Picker Overlay -->
@@ -44,4 +53,8 @@
       (close)="onCloseRecipePicker()">
     </app-recipe-picker>
   }
+<<<<<<< HEAD
 </div>
+=======
+</div>
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396

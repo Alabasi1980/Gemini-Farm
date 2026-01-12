@@ -14,7 +14,10 @@ const CROPS_DATA: Crop[] = [
       { stage: 2, duration: 4000, asset: '🌾' }, // Grown
       { stage: 3, duration: 0, asset: '🌾' }      // Ready
     ],
+<<<<<<< HEAD
     seasonModifiers: { 'Autumn': 1.2, 'Winter': 0.8 },
+=======
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
   },
   {
     id: 'corn',
@@ -28,7 +31,10 @@ const CROPS_DATA: Crop[] = [
       { stage: 2, duration: 8000, asset: '🌽' },
       { stage: 3, duration: 0, asset: '🌽' }
     ],
+<<<<<<< HEAD
     seasonModifiers: { 'Summer': 1.25, 'Winter': 0.7 },
+=======
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
   },
   {
     id: 'tomato',
@@ -42,7 +48,10 @@ const CROPS_DATA: Crop[] = [
         { stage: 2, duration: 12000, asset: '🍅' },
         { stage: 3, duration: 0, asset: '🍅' }
     ],
+<<<<<<< HEAD
     seasonModifiers: { 'Summer': 1.2, 'Spring': 1.1, 'Autumn': 0.9 },
+=======
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
   },
 ];
 
@@ -59,4 +68,8 @@ export class CropService {
   getCrop(id: string): Crop | undefined {
     return this.crops.get(id);
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 06d4b89be5f8ccb60b11178b1904fcf215ba9396
