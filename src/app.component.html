@@ -1,0 +1,43 @@
+<div class="flex h-screen bg-gray-800">
+  <!-- Sidebar Navigation -->
+  <aside class="w-20 bg-gray-900 flex flex-col items-center py-4 space-y-4">
+    <div class="text-green-400 font-bold text-lg">GF</div>
+    <nav class="flex flex-col items-center space-y-2 mt-8">
+      @for (item of navItems; track item.id) {
+        <button 
+          (click)="changeTab(item.id)"
+          [class]="'p-3 rounded-lg transition-colors duration-200 ' + (activeTab() === item.id ? 'bg-green-600 text-white' : 'text-gray-400 hover:bg-gray-700 hover:text-white')"
+          [title]="item.label">
+          <div [innerHTML]="item.icon"></div>
+        </button>
+      }
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 overflow-auto">
+    @switch (activeTab()) {
+      @case ('Farm') {
+        <farm-page />
+      }
+      @case ('Shop') {
+        <shop-page />
+      }
+      @case ('Inventory') {
+        <inventory-page />
+      }
+      @case ('Production') {
+        <production-page />
+      }
+      @case ('Tasks') {
+        <tasks-page />
+      }
+      @case ('Community') {
+        <community-page />
+      }
+      @case ('Profile') {
+        <profile-page />
+      }
+    }
+  </main>
+</div>

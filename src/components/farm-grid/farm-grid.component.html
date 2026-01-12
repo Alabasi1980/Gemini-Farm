@@ -1,0 +1,17 @@
+<div class="p-4 md:p-8">
+  <div class="relative max-w-7xl mx-auto aspect-[12/10]">
+    <!-- Plot Grid -->
+    <div class="grid grid-cols-12 grid-rows-10 gap-2 h-full">
+      @for (plot of plots(); track plot.id) {
+        <app-plot [plot]="plot"></app-plot>
+      }
+    </div>
+    
+    <!-- Object Grid -->
+    <div class="absolute inset-0 grid grid-cols-12 grid-rows-10 gap-2 pointer-events-none">
+       @for (object of placedObjects(); track object.instanceId) {
+          <app-placeable-object [object]="object"></app-placeable-object>
+       }
+    </div>
+  </div>
+</div>

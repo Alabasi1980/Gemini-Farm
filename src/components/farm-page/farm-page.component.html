@@ -1,0 +1,26 @@
+<div class="relative h-full w-full overflow-y-auto">
+  <!-- HUD -->
+  <app-hud></app-hud>
+
+  <!-- Farm Scene -->
+  <div class="h-full min-h-screen w-full bg-gradient-to-b from-sky-400 to-green-600 flex flex-col pt-20">
+    <app-farm-grid></app-farm-grid>
+  </div>
+
+  <!-- Crop Picker Overlay -->
+  @if (showCropPicker() !== null) {
+    <app-crop-picker 
+      (cropSelected)="onCropSelected($event)" 
+      (close)="onClosePicker()">
+    </app-crop-picker>
+  }
+
+  <!-- Recipe Picker Overlay -->
+  @if (showRecipePicker(); as factoryId) {
+    <app-recipe-picker
+      [factoryInstanceId]="factoryId"
+      (recipeSelected)="onRecipeSelected($event)"
+      (close)="onCloseRecipePicker()">
+    </app-recipe-picker>
+  }
+</div>
