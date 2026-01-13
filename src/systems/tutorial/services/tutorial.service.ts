@@ -92,15 +92,7 @@ export class TutorialService {
     }
     
     private async giveCompletionReward() {
-        this.gameStateService.state.update(s => {
-            if (!s) return null;
-            return {
-                ...s,
-                coins: s.coins + 100,
-                xp: s.xp + 50
-            }
-        });
-        await this.gameStateService.saveStateImmediately();
+        await this.gameStateService.applyResourceChanges({ coins: 100, xp: 50 });
     }
 
     private updatePlayerState(milestoneUpdate: { [key: string]: any }) {

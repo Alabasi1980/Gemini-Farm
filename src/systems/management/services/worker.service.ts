@@ -28,8 +28,8 @@ export class WorkerService {
     gameClockService = inject(GameClockService);
     objectService = inject(ObjectService);
 
-    workers = signal<Worker[]>(INITIAL_WORKERS);
-    actionLogs = signal<ActionLog[]>([]);
+    workers = signal<Worker[]>([]);
+    private actionLogs = signal<ActionLog[]>([]); // Keep logs local and transient
 
     constructor() {
         effect(() => {
@@ -44,6 +44,16 @@ export class WorkerService {
                 }
             }
         }, { allowSignalWrites: true });
+    }
+
+    public initializeState(workers: Worker[] | undefined) {
+        if (workers) {
+            this.workers.set(workers);
+        } else {
+            // New player or reset
+            this.workers.set(INITIAL_WORKERS);
+        }
+        this.actionLogs.set([]);
     }
 
     toggleWorker(workerId: string) {

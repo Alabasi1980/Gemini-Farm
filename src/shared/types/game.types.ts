@@ -237,8 +237,23 @@ export interface DisplayItem {
     quantity: number;
 }
 
+export type SerializableMap<T> = { [key: string]: T };
+
+export interface MutationContext {
+    sessionId: string;
+    mutationId: string;
+}
+
 // --- Database Document Type ---
 export interface GameDataDocument {
     playerState: PlayerState;
+    farmTiles?: FarmTile[];
+    placedObjects?: FarmObject[];
+    factoryStates?: SerializableMap<FactoryState>;
+    animalBuildingStates?: SerializableMap<AnimalBuildingState>;
+    tasks?: GameTask[];
+    taskStates?: SerializableMap<TaskState>;
+    workers?: Worker[];
     updatedAt?: any; // For Firestore serverTimestamp
+    lastMutation?: MutationContext;
 }

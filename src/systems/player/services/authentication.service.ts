@@ -1,14 +1,9 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { DatabaseService } from '../../../shared/services/database.service';
-import { 
-    getAuth, 
-    onAuthStateChanged, 
-    createUserWithEmailAndPassword, 
-    signInWithEmailAndPassword, 
-    signOut, 
-    Auth, 
-    User 
-} from 'firebase/auth';
+// FIX: Use Firebase compat library to resolve import errors
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
+
 
 export type AuthState = 'loading' | 'authenticated' | 'unauthenticated';
 export type UserRole = 'admin' | 'player';
@@ -18,18 +13,20 @@ export type UserRole = 'admin' | 'player';
 })
 export class AuthenticationService {
   private dbService = inject(DatabaseService);
-  private auth: Auth;
+  private auth: firebase.auth.Auth;
 
   authState = signal<AuthState>('loading');
-  user = signal<User | null>(null);
+  user = signal<firebase.User | null>(null);
   userRole = signal<UserRole | null>(null);
 
   userId = computed(() => this.user()?.uid ?? null);
 
   constructor() {
-    this.auth = getAuth(this.dbService.getApp());
+    // FIX: Use compat auth initialization
+    this.auth = firebase.auth(this.dbService.getApp());
 
-    onAuthStateChanged(this.auth, async (firebaseUser) => {
+    // FIX: Use compat onAuthStateChanged
+    this.auth.onAuthStateChanged(async (firebaseUser) => {
       this.user.set(firebaseUser);
       if (firebaseUser) {
         await this.loadUserProfile(firebaseUser.uid, firebaseUser.email!);
@@ -58,14 +55,17 @@ export class AuthenticationService {
   }
 
   async register(email: string, password: string):Promise<void> {
-    await createUserWithEmailAndPassword(this.auth, email, password);
+    // FIX: Use compat createUserWithEmailAndPassword
+    await this.auth.createUserWithEmailAndPassword(email, password);
   }
 
   async login(email: string, password: string): Promise<void> {
-    await signInWithEmailAndPassword(this.auth, email, password);
+    // FIX: Use compat signInWithEmailAndPassword
+    await this.auth.signInWithEmailAndPassword(email, password);
   }
 
   async logout(): Promise<void> {
-    await signOut(this.auth);
+    // FIX: Use compat signOut
+    await this.auth.signOut();
   }
 }

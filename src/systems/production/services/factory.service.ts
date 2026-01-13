@@ -1,5 +1,5 @@
-import { Injectable, inject, signal, effect, computed } from '@angular/core';
-import { FactoryState, ProcessedGood, Recipe, ProductionJob } from '../../../shared/types/game.types';
+import { Injectable, inject, signal, effect, computed, Injector } from '@angular/core';
+import { FactoryState, ProcessedGood, Recipe, ProductionJob, SerializableMap } from '../../../shared/types/game.types';
 import { GameStateService } from '../../player/services/game-state.service';
 import { ObjectService } from '../../farm/services/object.service';
 import { PlacementService } from '../../farm/services/placement.service';
@@ -9,11 +9,17 @@ import { ContentService } from '../../../shared/services/content.service';
 
 @Injectable({ providedIn: 'root' })
 export class FactoryService {
-    private gameStateService = inject(GameStateService);
     private placementService = inject(PlacementService);
     private objectService = inject(ObjectService);
     private gameClockService = inject(GameClockService);
     private contentService = inject(ContentService);
+    private injector = inject(Injector);
+
+    private _gameStateService: GameStateService | null = null;
+    private get gameStateService(): GameStateService {
+        if (!this._gameStateService) this._gameStateService = this.injector.get(GameStateService);
+        return this._gameStateService;
+    }
 
     private goods = computed(() => {
         return new Map<string, ProcessedGood>(this.contentService.processedGoods().map(g => [g.id, g]));
@@ -99,6 +105,20 @@ export class FactoryService {
         });
     }
 
+    private objectToMap<T>(obj: SerializableMap<T> | undefined): Map<number, T> {
+        const map = new Map<number, T>();
+        if (obj) {
+            for (const key in obj) {
+                map.set(Number(key), obj[key]);
+            }
+        }
+        return map;
+    }
+
+    public initializeState(states: SerializableMap<FactoryState> | undefined) {
+        this.factoryStates.set(this.objectToMap(states));
+    }
+
     getRecipe(id: string): Recipe | undefined { return this.recipes().get(id); }
     getProcessedGood(id: string): ProcessedGood | undefined { return this.goods().get(id); }
     getAllProcessedGoods(): ProcessedGood[] { return Array.from(this.goods().values()); }
@@ -127,7 +147,7 @@ export class FactoryService {
             return false;
         }
 
-        if (await this.gameStateService.consumeFromInventory(recipe.inputs)) {
+        if (await this.gameStateService.consumeFromInventory(recipe.inputs, true)) {
             this.factoryStates.update(states => {
                 const current = states.get(instanceId)!;
                 const newJob: ProductionJob = { jobId: this.nextJobId++, recipeId, startTime: 0 };
@@ -185,7 +205,6 @@ export class FactoryService {
         }
         
         this.gameStateService.state.update(s => s ? ({...s, coins: s.coins - config.upgradeCost}) : null);
-        await this.gameStateService.saveStateImmediately();
 
         this.factoryStates.update(states => {
             const newStates = new Map(states);

@@ -15,9 +15,22 @@ export class PlacementService {
   placedObjects = signal<FarmObject[]>([]);
   private nextInstanceId = signal(0);
   
+  constructor() {}
+
+  public initializeState(objects: FarmObject[] | undefined) {
+    if (objects && objects.length > 0) {
+        this.placedObjects.set(objects);
+        const maxId = Math.max(...objects.map(o => o.instanceId));
+        this.nextInstanceId.set(maxId + 1);
+    } else {
+        this.placedObjects.set([]);
+        this.nextInstanceId.set(0);
+    }
+  }
+
   buyObject(itemId: string) {
     const item = this.objectService.getItem(itemId);
-    if (!item || this.gameStateService.state()!.coins < item.cost) return;
+    if (!item || (this.gameStateService.state()?.coins ?? 0) < item.cost) return;
 
     // Find first available spot on unlocked land
     const unlockedBounds = this.gridService.unlockedBounds();
@@ -26,7 +39,6 @@ export class PlacementService {
         const newObj: FarmObject = { instanceId: -1, itemId, x, y };
         if (this.isPositionValid(newObj)) {
           this.gameStateService.state.update(s => ({ ...s!, coins: s!.coins - item.cost }));
-          this.gameStateService.saveStateImmediately();
           
           const instanceId = this.nextInstanceId();
           this.placedObjects.update(objs => [...objs, { ...newObj, instanceId }]);

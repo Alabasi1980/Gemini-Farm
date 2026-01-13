@@ -1,5 +1,5 @@
 import { Injectable, signal, inject, effect } from '@angular/core';
-import { GameTask, PlaceableItem, TaskState } from '../../../shared/types/game.types';
+import { GameTask, PlaceableItem, TaskState, SerializableMap } from '../../../shared/types/game.types';
 import { GameStateService } from '../../player/services/game-state.service';
 import { AiTaskService, PlayerTaskContext } from './ai-task.service';
 import { ObjectService } from '../../farm/services/object.service';
@@ -55,17 +55,19 @@ export class TaskService {
         });
     }
 
-    private initializeTaskStates(tasks: GameTask[]) {
-        const initialStates = new Map<string, TaskState>();
-        for (const task of tasks) {
-            initialStates.set(task.id, {
-                taskId: task.id,
-                progress: 0,
-                completed: false,
-                claimed: false,
-            });
+    private objectToMap<T>(obj: SerializableMap<T> | undefined): Map<string, T> {
+        const map = new Map<string, T>();
+        if (obj) {
+            for (const key in obj) {
+                map.set(key, obj[key]);
+            }
         }
-        this.taskStates.set(initialStates);
+        return map;
+    }
+
+    public initializeState(tasks: GameTask[] | undefined, states: SerializableMap<TaskState> | undefined) {
+        this.tasks.set(tasks ?? []);
+        this.taskStates.set(this.objectToMap(states));
     }
 
     async fetchNewTasks() {
@@ -104,7 +106,17 @@ export class TaskService {
             
             // 3. Update State
             this.tasks.set(newTasks);
-            this.initializeTaskStates(newTasks);
+            
+            const newStates = new Map<string, TaskState>();
+            for (const task of newTasks) {
+                newStates.set(task.id, {
+                    taskId: task.id,
+                    progress: 0,
+                    completed: false,
+                    claimed: false,
+                });
+            }
+            this.taskStates.set(newStates);
 
         } catch (e: any) {
             this.error.set(e.message || "An unknown error occurred.");

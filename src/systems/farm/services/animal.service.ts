@@ -1,5 +1,5 @@
-import { Injectable, signal, inject, effect, computed } from '@angular/core';
-import { AnimalBuildingState, AnimalProduct } from '../../../shared/types/game.types';
+import { Injectable, signal, inject, effect, computed, Injector } from '@angular/core';
+import { AnimalBuildingState, AnimalProduct, SerializableMap } from '../../../shared/types/game.types';
 import { GameStateService } from '../../player/services/game-state.service';
 import { ObjectService } from './object.service';
 import { PlacementService } from './placement.service';
@@ -8,11 +8,17 @@ import { ContentService } from '../../../shared/services/content.service';
 
 @Injectable({ providedIn: 'root' })
 export class AnimalService {
-    private gameStateService = inject(GameStateService);
     private placementService = inject(PlacementService);
     private objectService = inject(ObjectService);
     private gameClockService = inject(GameClockService);
     private contentService = inject(ContentService);
+    private injector = inject(Injector);
+
+    private _gameStateService: GameStateService | null = null;
+    private get gameStateService(): GameStateService {
+        if (!this._gameStateService) this._gameStateService = this.injector.get(GameStateService);
+        return this._gameStateService;
+    }
 
     private products = computed(() => {
         return new Map<string, AnimalProduct>(this.contentService.animalProducts().map(p => [p.id, p]));
@@ -47,6 +53,7 @@ export class AnimalService {
                 const newStates = new Map(currentStates);
                 const buildingIds = new Set(animalBuildings.map(b => b.instanceId));
 
+                // Add state for newly placed buildings that don't have one
                 for (const building of animalBuildings) {
                     if (!newStates.has(building.instanceId)) {
                         newStates.set(building.instanceId, {
@@ -56,6 +63,7 @@ export class AnimalService {
                     }
                 }
                 
+                // Remove state for buildings that no longer exist
                 for (const id of currentStates.keys()) {
                     if (!buildingIds.has(id)) {
                         newStates.delete(id);
@@ -64,6 +72,20 @@ export class AnimalService {
                 return newStates;
             });
         });
+    }
+
+    private objectToMap<T>(obj: SerializableMap<T> | undefined): Map<number, T> {
+        const map = new Map<number, T>();
+        if (obj) {
+            for (const key in obj) {
+                map.set(Number(key), obj[key]);
+            }
+        }
+        return map;
+    }
+
+    public initializeState(states: SerializableMap<AnimalBuildingState> | undefined) {
+        this.productionStates.set(this.objectToMap(states));
     }
 
     getProduct(id: string): AnimalProduct | undefined {
