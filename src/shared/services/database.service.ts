@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { initializeApp, FirebaseApp } from 'firebase/app';
-import { getFirestore, doc, setDoc, getDoc, Firestore, DocumentData, collection, getDocs, updateDoc, serverTimestamp, addDoc, deleteDoc } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, getDoc, Firestore, DocumentData, collection, getDocs, updateDoc, serverTimestamp, addDoc, deleteDoc, query, orderBy, limit } from 'firebase/firestore';
 import { firebaseConfig } from '../../environments/firebase.config';
-import { GameDataDocument, PlayerState } from '../types/game.types';
+import { AdminAuditLog, AnalyticsEvent, ClientErrorLog, GameDataDocument, PlayerState } from '../types/game.types';
 
 export interface UserProfile {
     email?: string;
@@ -164,6 +164,80 @@ export class DatabaseService {
         await updateDoc(playerDocRef, updatePayload);
     } catch (error) {
         console.error(`Error updating player state for ${userId}:`, error);
+        throw error;
+    }
+  }
+
+  async logAdminAction(logData: object): Promise<void> {
+    try {
+      const auditColRef = collection(this.db, 'admin_audit_logs');
+      await addDoc(auditColRef, {
+        ...logData,
+        timestamp: serverTimestamp()
+      });
+    } catch (error) {
+      console.error("Error writing to admin audit log:", error);
+      throw error;
+    }
+  }
+
+  async getAdminAuditLogs(): Promise<AdminAuditLog[]> {
+    try {
+      const auditColRef = collection(this.db, 'admin_audit_logs');
+      const q = query(auditColRef, orderBy('timestamp', 'desc'), limit(100));
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(doc => doc.data() as AdminAuditLog);
+    } catch (error) {
+      console.error("Error fetching admin audit logs:", error);
+      throw error;
+    }
+  }
+
+  // --- Observability ---
+  async logClientError(logData: object): Promise<void> {
+    try {
+        const errorsColRef = collection(this.db, 'client_errors');
+        await addDoc(errorsColRef, {
+            ...logData,
+            timestamp: serverTimestamp()
+        });
+    } catch (error) {
+        console.error("Error writing to client error log:", error);
+    }
+  }
+
+  async getClientErrors(): Promise<ClientErrorLog[]> {
+    try {
+        const errorsColRef = collection(this.db, 'client_errors');
+        const q = query(errorsColRef, orderBy('timestamp', 'desc'), limit(100));
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => doc.data() as ClientErrorLog);
+    } catch (error) {
+        console.error("Error fetching client error logs:", error);
+        throw error;
+    }
+  }
+  
+  async logAnalyticsEvent(eventData: object): Promise<void> {
+    try {
+        const eventsColRef = collection(this.db, 'analytics_events');
+        await addDoc(eventsColRef, {
+            ...eventData,
+            timestamp: serverTimestamp()
+        });
+    } catch (error) {
+        console.error("Error writing to analytics event log:", error);
+    }
+  }
+
+  async getAnalyticsEvents(): Promise<AnalyticsEvent[]> {
+    try {
+        const eventsColRef = collection(this.db, 'analytics_events');
+        const q = query(eventsColRef, orderBy('timestamp', 'desc'), limit(200));
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => doc.data() as AnalyticsEvent);
+    } catch (error) {
+        console.error("Error fetching analytics events:", error);
         throw error;
     }
   }

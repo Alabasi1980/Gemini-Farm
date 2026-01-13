@@ -4,6 +4,7 @@ import { GameStateService } from '../../player/services/game-state.service';
 import { AiTaskService, PlayerTaskContext } from './ai-task.service';
 import { ObjectService } from '../../farm/services/object.service';
 import { PlacementService } from '../../farm/services/placement.service';
+import { ObservabilityService } from '../../../shared/services/observability.service';
 
 @Injectable({ providedIn: 'root' })
 export class TaskService {
@@ -11,6 +12,7 @@ export class TaskService {
     private aiTaskService = inject(AiTaskService);
     private placementService = inject(PlacementService);
     private objectService = inject(ObjectService);
+    private observabilityService = inject(ObservabilityService);
 
     tasks = signal<GameTask[]>([]);
     taskStates = signal<Map<string, TaskState>>(new Map());
@@ -133,6 +135,12 @@ export class TaskService {
             const newStates = new Map(states);
             newStates.set(taskId, { ...state, claimed: true });
             return newStates;
+        });
+
+        this.observabilityService.logEvent('task_completed', { 
+            taskId: task.id,
+            rewardCoins: task.reward.coins,
+            rewardXp: task.reward.xp
         });
     }
 }

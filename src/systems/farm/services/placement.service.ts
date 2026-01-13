@@ -17,7 +17,7 @@ export class PlacementService {
   
   buyObject(itemId: string) {
     const item = this.objectService.getItem(itemId);
-    if (!item || this.gameStateService.state().coins < item.cost) return;
+    if (!item || this.gameStateService.state()!.coins < item.cost) return;
 
     // Find first available spot on unlocked land
     const unlockedBounds = this.gridService.unlockedBounds();
@@ -25,7 +25,9 @@ export class PlacementService {
       for (let x = unlockedBounds.minX; x <= unlockedBounds.maxX - (item.width-1); x++) {
         const newObj: FarmObject = { instanceId: -1, itemId, x, y };
         if (this.isPositionValid(newObj)) {
-          this.gameStateService.state.update(s => ({ ...s, coins: s.coins - item.cost }));
+          this.gameStateService.state.update(s => ({ ...s!, coins: s!.coins - item.cost }));
+          this.gameStateService.saveStateImmediately();
+          
           const instanceId = this.nextInstanceId();
           this.placedObjects.update(objs => [...objs, { ...newObj, instanceId }]);
           this.nextInstanceId.update(id => id + 1);

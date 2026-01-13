@@ -185,6 +185,7 @@ export class FactoryService {
         }
         
         this.gameStateService.state.update(s => s ? ({...s, coins: s.coins - config.upgradeCost}) : null);
+        this.gameStateService.saveStateImmediately();
 
         this.factoryStates.update(states => {
             const newStates = new Map(states);

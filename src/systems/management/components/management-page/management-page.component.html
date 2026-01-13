@@ -3,75 +3,96 @@
     <h1 class="text-3xl font-bold text-slate-300">Admin Panel</h1>
     <div class="flex space-x-2 bg-slate-800 p-1 rounded-lg">
       <button 
-        (click)="activeView.set('players')"
+        (click)="setView('players')"
         class="px-4 py-2 text-sm font-semibold rounded-md transition-colors"
         [class]="activeView() === 'players' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:bg-slate-700'">
         Player Management
       </button>
       <button 
-        (click)="activeView.set('content')"
+        (click)="setView('content')"
         class="px-4 py-2 text-sm font-semibold rounded-md transition-colors"
         [class]="activeView() === 'content' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:bg-slate-700'">
         Content Management
       </button>
+      <button 
+        (click)="setView('audit')"
+        class="px-4 py-2 text-sm font-semibold rounded-md transition-colors"
+        [class]="activeView() === 'audit' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:bg-slate-700'">
+        Audit Log
+      </button>
+      <button 
+        (click)="setView('observability')"
+        class="px-4 py-2 text-sm font-semibold rounded-md transition-colors"
+        [class]="activeView() === 'observability' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:bg-slate-700'">
+        Observability
+      </button>
     </div>
   </div>
 
-  @if(activeView() === 'players') {
-    @if (loading()) {
-      <div class="text-center py-20 bg-slate-800/50 rounded-lg">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-400 mx-auto"></div>
-        <p class="mt-4 text-slate-300 font-semibold">Loading player data...</p>
-      </div>
-    } @else if (error()) {
-      <div class="text-center py-12 bg-red-900/50 border border-red-700 rounded-lg">
-        <p class="text-red-300 font-bold text-lg">Error</p>
-        <p class="mt-2 text-red-400">{{ error() }}</p>
-      </div>
-    } @else {
-      <div class="bg-slate-800 border border-slate-700 rounded-lg shadow-lg overflow-hidden">
-        <table class="min-w-full divide-y divide-slate-700">
-          <thead class="bg-slate-900/50">
-            <tr>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Player</th>
-              <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-slate-400 uppercase tracking-wider">Level</th>
-              <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">Coins</th>
-              <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">XP</th>
-              <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-slate-400 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-700/50">
-            @for (player of players(); track player.uid) {
-              <tr class="hover:bg-slate-700/30 transition-colors duration-150">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-white">{{ player.email }}</div>
-                  <div class="text-xs text-slate-400">{{ player.uid }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-center">
-                  <span class="bg-yellow-500/20 text-yellow-300 font-bold text-sm px-3 py-1 rounded-full border border-yellow-500/50">
-                    {{ player.playerState.level }}
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right font-mono text-yellow-300">{{ player.playerState.coins | number }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-right font-mono text-blue-300">{{ player.playerState.xp | number }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                  <div class="flex items-center justify-center space-x-2">
-                    <button (click)="openModal(player, 'coins')" class="text-yellow-400 hover:text-yellow-300 transition-colors" title="Give Coins">
-                      💰 Add
-                    </button>
-                    <button (click)="openModal(player, 'xp')" class="text-blue-400 hover:text-blue-300 transition-colors" title="Give XP">
-                      ⭐ Add
-                    </button>
-                  </div>
-                </td>
+  @switch (activeView()) {
+    @case ('players') {
+      @if (loading()) {
+        <div class="text-center py-20 bg-slate-800/50 rounded-lg">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-400 mx-auto"></div>
+          <p class="mt-4 text-slate-300 font-semibold">Loading player data...</p>
+        </div>
+      } @else if (error()) {
+        <div class="text-center py-12 bg-red-900/50 border border-red-700 rounded-lg">
+          <p class="text-red-300 font-bold text-lg">Error</p>
+          <p class="mt-2 text-red-400">{{ error() }}</p>
+        </div>
+      } @else {
+        <div class="bg-slate-800 border border-slate-700 rounded-lg shadow-lg overflow-hidden">
+          <table class="min-w-full divide-y divide-slate-700">
+            <thead class="bg-slate-900/50">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Player</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-slate-400 uppercase tracking-wider">Level</th>
+                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">Coins</th>
+                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">XP</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-slate-400 uppercase tracking-wider">Actions</th>
               </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody class="divide-y divide-slate-700/50">
+              @for (player of players(); track player.uid) {
+                <tr class="hover:bg-slate-700/30 transition-colors duration-150">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-white">{{ player.email }}</div>
+                    <div class="text-xs text-slate-400">{{ player.uid }}</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-center">
+                    <span class="bg-yellow-500/20 text-yellow-300 font-bold text-sm px-3 py-1 rounded-full border border-yellow-500/50">
+                      {{ player.playerState.level }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-right font-mono text-yellow-300">{{ player.playerState.coins | number }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-right font-mono text-blue-300">{{ player.playerState.xp | number }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                    <div class="flex items-center justify-center space-x-2">
+                      <button (click)="openModal(player, 'coins')" class="text-yellow-400 hover:text-yellow-300 transition-colors" title="Give Coins">
+                        💰 Add
+                      </button>
+                      <button (click)="openModal(player, 'xp')" class="text-blue-400 hover:text-blue-300 transition-colors" title="Give XP">
+                        ⭐ Add
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
     }
-  } @else {
-    <app-content-management></app-content-management>
+    @case ('content') {
+      <app-content-management></app-content-management>
+    }
+    @case ('audit') {
+      <app-audit-log></app-audit-log>
+    }
+    @case ('observability') {
+      <app-observability-page></app-observability-page>
+    }
   }
 </div>
 

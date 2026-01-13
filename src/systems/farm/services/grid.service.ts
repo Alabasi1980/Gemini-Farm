@@ -3,6 +3,7 @@ import { FarmTile } from '../../../shared/types/game.types';
 import { GameStateService } from '../../player/services/game-state.service';
 import { CropService } from './crop.service';
 import { GameClockService } from '../../world/services/game-clock.service';
+import { ObservabilityService } from '../../../shared/services/observability.service';
 
 // Export grid dimensions for use in other services
 export const GRID_WIDTH = 31;
@@ -22,6 +23,7 @@ export class GridService {
   private gameStateService = inject(GameStateService);
   private cropService = inject(CropService);
   private gameClockService = inject(GameClockService);
+  private observabilityService = inject(ObservabilityService);
 
   tiles = signal<FarmTile[]>([]);
   expansionPreview = signal<{ tiles: FarmTile[], cost: number, direction: 'up'|'down'|'left'|'right' } | null>(null);
@@ -128,10 +130,11 @@ export class GridService {
       const tileIdsToUnlock = new Set(tilesToUnlock.map(t => t.id));
 
       this.gameStateService.state.update(s => ({
-          ...s, 
-          coins: s.coins - cost,
-          expansionsPurchased: s.expansionsPurchased + 1,
+          ...s!, 
+          coins: s!.coins - cost,
+          expansionsPurchased: s!.expansionsPurchased + 1,
       }));
+      this.gameStateService.saveStateImmediately();
 
       this.tiles.update(currentTiles => 
           currentTiles.map(t => tileIdsToUnlock.has(t.id) ? { ...t, state: 'free_space' } : t)
@@ -146,14 +149,22 @@ export class GridService {
 
   plantCrop(tileId: number, cropId: string) {
     const crop = this.cropService.getCrop(cropId);
-    if (!crop || this.gameStateService.state().coins < crop.plantCost) return;
+    if (!crop || this.gameStateService.state()!.coins < crop.plantCost) return;
 
-    this.gameStateService.state.update(s => ({...s, coins: s.coins - crop.plantCost}));
+    this.gameStateService.state.update(s => ({...s!, coins: s!.coins - crop.plantCost}));
     this.tiles.update(tiles => tiles.map(t => 
         t.id === tileId 
             ? { ...t, state: 'planted_plot', cropId: cropId, plantTime: Date.now() } 
             : t
     ));
+    
+    // Analytics for first plant
+    const playerState = this.gameStateService.state();
+    if (playerState && !playerState.milestones?.hasPlantedFirstCrop) {
+        this.observabilityService.logEvent('first_plant', { cropId });
+        this.gameStateService.state.update(s => ({ ...s!, milestones: { ...s!.milestones, hasPlantedFirstCrop: true } }));
+        this.gameStateService.saveStateImmediately();
+    }
   }
 
   harvestPlot(tileId: number) {
@@ -161,11 +172,20 @@ export class GridService {
       if (!tile || !tile.cropId) return;
 
       if (this.gameStateService.addToInventory(tile.cropId, 1)) {
+          const harvestedCropId = tile.cropId;
           this.tiles.update(tiles => tiles.map(t => 
               t.id === tileId
                   ? { ...t, state: 'empty_plot', cropId: undefined, plantTime: undefined }
                   : t
           ));
+
+          // Analytics for first harvest
+          const playerState = this.gameStateService.state();
+          if (playerState && !playerState.milestones?.hasHarvestedFirstCrop) {
+              this.observabilityService.logEvent('first_harvest', { cropId: harvestedCropId });
+              this.gameStateService.state.update(s => ({ ...s!, milestones: { ...s!.milestones, hasHarvestedFirstCrop: true } }));
+              this.gameStateService.saveStateImmediately();
+          }
       }
   }
 }

@@ -3,14 +3,16 @@ import { CommonModule } from '@angular/common';
 import { AdminService, PlayerAdminView } from '../../services/admin.service';
 import { FormsModule } from '@angular/forms';
 import { ContentManagementComponent } from '../content-management/content-management.component';
+import { AuditLogComponent } from '../audit-log/audit-log.component';
+import { ObservabilityPageComponent } from '../observability-page/observability-page.component';
 
 type ModalMode = 'coins' | 'xp';
-type AdminView = 'players' | 'content';
+type AdminView = 'players' | 'content' | 'audit' | 'observability';
 
 @Component({
   selector: 'management-page',
   templateUrl: './management-page.component.html',
-  imports: [CommonModule, FormsModule, ContentManagementComponent],
+  imports: [CommonModule, FormsModule, ContentManagementComponent, AuditLogComponent, ObservabilityPageComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ManagementPageComponent implements OnInit {
@@ -31,6 +33,18 @@ export class ManagementPageComponent implements OnInit {
 
   ngOnInit() {
     this.adminService.loadAllPlayers();
+  }
+
+  setView(view: AdminView) {
+    this.activeView.set(view);
+    if (view === 'audit') {
+        this.adminService.loadAuditLogs();
+    } else if (view === 'players' && this.players().length === 0) {
+        this.adminService.loadAllPlayers();
+    } else if (view === 'observability') {
+        this.adminService.loadErrorLogs();
+        this.adminService.loadAnalyticsEvents();
+    }
   }
 
   openModal(player: PlayerAdminView, mode: ModalMode) {

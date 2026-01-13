@@ -116,3 +116,9 @@ Components should be small, efficient, and focused on a single responsibility.
     -   **Smart Components (Pages):** These are top-level components for a route/view. They are responsible for injecting services, fetching data, and passing that data down to child components.
     -   **Dumb Components (UI):** These are reusable UI elements. They receive all their data via `input()`s and emit events via `output()`s. They should not inject services directly.
 5.  **No Logic in Templates:** Keep templates as simple as possible. Complex logic, calculations, or data transformations should be handled in the component's class, typically using `computed()` signals.
+
+---
+
+## 5. Documentation
+
+**Up-to-Date Documentation:** All design and architecture documents (files in `src/docs/`) **must** be updated to reflect any changes made to the game mechanics, systems, or architecture. This ensures that the documentation remains a reliable single source of truth for the project's current state.

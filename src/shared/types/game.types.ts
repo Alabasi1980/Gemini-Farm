@@ -1,4 +1,5 @@
 export interface PlayerState {
+  version: number;
   coins: number;
   xp: number;
   level: number;
@@ -7,6 +8,10 @@ export interface PlayerState {
   };
   inventory: { [itemId: string]: number };
   expansionsPurchased: number;
+  milestones?: {
+    hasPlantedFirstCrop?: boolean;
+    hasHarvestedFirstCrop?: boolean;
+  };
 }
 
 export type TileState = 'locked' | 'free_space' | 'empty_plot' | 'planted_plot';
@@ -156,6 +161,41 @@ export interface LeaderboardEntry {
     xp: number;
     isPlayer: boolean;
 }
+
+// Admin-related types
+export interface AdminAuditLog {
+  timestamp: { seconds: number; nanoseconds: number; }; // Firestore Timestamp object
+  adminUid: string;
+  adminEmail: string;
+  action: 'GIVE_COINS' | 'GIVE_XP';
+  targetUid: string;
+  targetEmail: string;
+  details: {
+    amount: number;
+    oldValue: number;
+    newValue: number;
+  };
+}
+
+// Observability-related types
+export interface ClientErrorLog {
+  timestamp: { seconds: number; nanoseconds: number; };
+  userId: string | null;
+  userEmail: string | null;
+  errorMessage: string;
+  errorStack: string;
+  context: string;
+  userAgent: string;
+}
+
+export interface AnalyticsEvent {
+  timestamp: { seconds: number; nanoseconds: number; };
+  userId: string | null;
+  userEmail: string | null;
+  eventName: string;
+  details: { [key: string]: any };
+}
+
 
 // Market-related types
 export interface MarketEvent {

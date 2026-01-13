@@ -1,11 +1,13 @@
 import '@angular/compiler';
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection, ErrorHandler } from '@angular/core';
 import { AppComponent } from './src/app.component';
+import { GlobalErrorHandler } from './src/shared/services/global-error-handler';
 
 bootstrapApplication(AppComponent, {
   providers: [
     provideZonelessChangeDetection(),
+    { provide: ErrorHandler, useClass: GlobalErrorHandler },
   ],
 }).catch(err => console.error(err));
 

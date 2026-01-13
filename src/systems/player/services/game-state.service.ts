@@ -4,7 +4,11 @@ import { AuthenticationService } from './authentication.service';
 import { DatabaseService } from '../../../shared/services/database.service';
 import { ContentService } from '../../../shared/services/content.service';
 
+const CURRENT_STATE_VERSION = 1;
+const SAVE_DEBOUNCE_TIME = 2500; // ms
+
 const NEW_PLAYER_STATE: PlayerState = {
+  version: CURRENT_STATE_VERSION,
   coins: 1000,
   xp: 150,
   level: 5,
@@ -13,6 +17,10 @@ const NEW_PLAYER_STATE: PlayerState = {
   },
   inventory: {},
   expansionsPurchased: 0,
+  milestones: {
+    hasPlantedFirstCrop: false,
+    hasHarvestedFirstCrop: false,
+  },
 };
 
 @Injectable({
@@ -25,6 +33,7 @@ export class GameStateService {
 
   state = signal<PlayerState | null>(null);
   loading = signal<boolean>(true);
+  private saveTimeout: any = null;
   
   currentStorage = computed(() => {
     const currentInventory = this.state()?.inventory;
@@ -47,19 +56,45 @@ export class GameStateService {
         }
     }, { allowSignalWrites: true });
 
-    // Auto-save effect
+    // Debounced auto-save effect
     effect(() => {
         const currentUserId = this.authService.userId();
         const currentState = this.state();
         // Only save if we have a valid state and user
         if (currentState && currentUserId) {
-            this.dbService.saveGameData(currentUserId, { playerState: currentState });
+            // Clear any existing timeout to reset the debounce timer
+            if (this.saveTimeout) {
+                clearTimeout(this.saveTimeout);
+            }
+            // Set a new timeout to save the data
+            this.saveTimeout = setTimeout(() => {
+                console.log('Auto-saving player state...');
+                this.dbService.saveGameData(currentUserId, { playerState: currentState });
+            }, SAVE_DEBOUNCE_TIME);
         }
     });
   }
 
   async initialize(): Promise<void> {
     await this.loadInitialContent();
+  }
+
+  /**
+   * Saves the current game state to Firestore immediately.
+   * Useful for critical actions where data loss must be prevented.
+   */
+  public saveStateImmediately(): void {
+    const currentUserId = this.authService.userId();
+    const currentState = this.state();
+
+    if (currentState && currentUserId) {
+      if (this.saveTimeout) {
+        clearTimeout(this.saveTimeout);
+        this.saveTimeout = null;
+      }
+      console.log('Performing immediate save for critical action...');
+      this.dbService.saveGameData(currentUserId, { playerState: currentState });
+    }
   }
 
   private async loadInitialContent() {
@@ -76,11 +111,13 @@ export class GameStateService {
     try {
       const savedData = await this.dbService.loadGameData(userId);
       if (savedData && savedData.playerState) {
-          this.state.set(savedData.playerState);
+          const migratedState = this.migrateState(savedData.playerState);
+          this.state.set(migratedState);
       } else {
           // This is a new player, create a default state
           console.log("Creating new player state for user:", userId);
           this.state.set(NEW_PLAYER_STATE);
+          this.saveStateImmediately();
       }
     } catch (error) {
         console.error("Failed to load player data, using default state:", error);
@@ -88,6 +125,25 @@ export class GameStateService {
     } finally {
         this.loading.set(false);
     }
+  }
+
+  private migrateState(playerState: PlayerState): PlayerState {
+      let migratedState = { ...playerState };
+
+      if (!migratedState.version || migratedState.version < CURRENT_STATE_VERSION) {
+          console.log(`Migrating player state from version ${migratedState.version || 0} to ${CURRENT_STATE_VERSION}`);
+          migratedState.version = CURRENT_STATE_VERSION;
+      }
+      
+      // Migration to add milestones object
+      if (!migratedState.milestones) {
+        migratedState.milestones = {
+            hasPlantedFirstCrop: false,
+            hasHarvestedFirstCrop: false,
+        };
+      }
+
+      return migratedState;
   }
 
   addToInventory(itemId: string, quantity: number): boolean {
@@ -138,6 +194,8 @@ export class GameStateService {
         return { ...s, inventory: newInventory };
     });
 
+    // This is a critical action, save immediately.
+    this.saveStateImmediately();
     return true;
   }
 
@@ -168,5 +226,8 @@ export class GameStateService {
             xp: s.xp + earnings,
         };
     });
+    
+    // This is a critical action, save immediately.
+    this.saveStateImmediately();
   }
 }

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal, Pipe, PipeTransform, inject, computed, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, Pipe, PipeTransform, inject, computed, OnInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
@@ -14,6 +14,7 @@ import { GameStateService } from './systems/player/services/game-state.service';
 import { AuthenticationService } from './systems/player/services/authentication.service';
 import { AuthPageComponent } from './systems/auth/components/auth-page/auth-page.component';
 import { ContentSeedingService } from './systems/management/services/content-seeding.service';
+import { ObservabilityService } from './shared/services/observability.service';
 
 type Tab = 'Farm' | 'Shop' | 'Inventory' | 'Production' | 'Tasks' | 'Community' | 'Admin Panel';
 
@@ -55,6 +56,7 @@ export class AppComponent implements OnInit {
   gameStateService = inject(GameStateService);
   authService = inject(AuthenticationService);
   contentSeedingService = inject(ContentSeedingService);
+  observabilityService = inject(ObservabilityService);
 
   activeTab = signal<Tab>('Farm');
   authStatus = this.authService.authState;
@@ -78,6 +80,19 @@ export class AppComponent implements OnInit {
     }
     return this.baseNavItems.filter(item => !item.adminOnly);
   });
+
+  constructor() {
+    let sessionStarted = false;
+    effect(() => {
+      const user = this.authService.user();
+      if (user && !sessionStarted) {
+        sessionStarted = true;
+        this.observabilityService.logEvent('session_start', { email: user.email });
+      } else if (!user) {
+        sessionStarted = false;
+      }
+    });
+  }
 
   async ngOnInit() {
     await this.initializeApp();
