@@ -68,8 +68,6 @@ export class AuthPageComponent {
     switch (error.code) {
       case 'auth/invalid-email':
         return 'Please enter a valid email address.';
-      case 'auth/user-not-found':
-      case 'auth/wrong-password':
       case 'auth/invalid-credential':
         return 'Invalid email or password. Please try again.';
       case 'auth/email-already-in-use':

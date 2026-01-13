@@ -6,8 +6,13 @@
     <div>
       <h2 class="text-2xl font-semibold mb-4 text-orange-300">Seeds & Crops</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        @for (crop of availableCrops; track crop.id) {
-          <div class="bg-slate-800 border border-slate-700 rounded-lg p-4 flex flex-col items-center text-center">
+        @for (crop of cropsForShop(); track crop.id) {
+          <div class="relative bg-slate-800 border border-slate-700 rounded-lg p-4 flex flex-col items-center text-center">
+             @if (!crop.isInSeason) {
+                <span class="absolute top-2 right-2 text-xs bg-red-800 text-red-200 px-2 py-1 rounded-full z-10">Out of Season</span>
+             } @else {
+                <span class="absolute top-2 right-2 text-xs bg-green-800 text-green-200 px-2 py-1 rounded-full z-10">In Season</span>
+             }
              <span class="text-6xl mb-2">{{ crop.growthStages[crop.growthStages.length - 1].asset }}</span>
              <h3 class="text-xl font-bold text-white">{{ crop.name }}</h3>
              <p class="text-slate-400 text-sm">Ready in {{ crop.growthTime / 1000 }}s</p>
@@ -33,7 +38,8 @@
               (click)="buyObject(item.id)"
               [disabled]="playerCoins < item.cost"
               class="w-full mt-3 px-4 py-2 rounded-lg font-bold text-white transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              [class]="playerCoins >= item.cost ? 'bg-blue-600 hover:bg-blue-700' : 'bg-slate-600'">
+              [class]="playerCoins >= item.cost ? 'bg-blue-600 hover:bg-blue-700' : 'bg-slate-600'"
+              [attr.data-tutorial-id]="item.id === 'chicken_coop' ? 'tutorial-buy-coop' : null">
                 Buy for {{ item.cost }}
             </button>
           </div>

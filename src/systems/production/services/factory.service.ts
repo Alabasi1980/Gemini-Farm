@@ -118,7 +118,7 @@ export class FactoryService {
         };
     }
 
-    startProduction(instanceId: number, recipeId: string) {
+    async startProduction(instanceId: number, recipeId: string): Promise<boolean> {
         const state = this.factoryStates().get(instanceId);
         const recipe = this.getRecipe(recipeId);
         const config = this.getFactoryConfig(instanceId);
@@ -127,7 +127,7 @@ export class FactoryService {
             return false;
         }
 
-        if (this.gameStateService.consumeFromInventory(recipe.inputs)) {
+        if (await this.gameStateService.consumeFromInventory(recipe.inputs)) {
             this.factoryStates.update(states => {
                 const current = states.get(instanceId)!;
                 const newJob: ProductionJob = { jobId: this.nextJobId++, recipeId, startTime: 0 };
@@ -177,7 +177,7 @@ export class FactoryService {
         }
     }
 
-    upgradeFactory(instanceId: number) {
+    async upgradeFactory(instanceId: number) {
         const config = this.getFactoryConfig(instanceId);
         const state = this.factoryStates().get(instanceId);
         if (!config || !state || !this.gameStateService.state() || this.gameStateService.state()!.coins < config.upgradeCost) {
@@ -185,7 +185,7 @@ export class FactoryService {
         }
         
         this.gameStateService.state.update(s => s ? ({...s, coins: s.coins - config.upgradeCost}) : null);
-        this.gameStateService.saveStateImmediately();
+        await this.gameStateService.saveStateImmediately();
 
         this.factoryStates.update(states => {
             const newStates = new Map(states);

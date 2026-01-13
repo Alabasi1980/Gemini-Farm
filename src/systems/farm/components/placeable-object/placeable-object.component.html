@@ -1,4 +1,6 @@
-<div class="relative w-full h-full">
+<div 
+    class="relative w-full h-full"
+    [attr.data-tutorial-id]="isTutorialTarget() ? 'tutorial-coop-placed' : null">
 
     <!-- Selection Indicator -->
     @if(isSelected() && !isBeingDragged()) {

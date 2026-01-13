@@ -11,6 +11,8 @@ export interface PlayerState {
   milestones?: {
     hasPlantedFirstCrop?: boolean;
     hasHarvestedFirstCrop?: boolean;
+    tutorialCompleted?: boolean;
+    tutorialStep?: number;
   };
 }
 
@@ -44,6 +46,7 @@ export interface Crop {
   growthTime: number; // total ms for full growth
   growthStages: CropGrowthStage[];
   seasonModifiers: Partial<Record<Season, number>>;
+  seasons?: Season[];
   unlockLevel: number;
   balanceTags: string[]; // e.g., ['common', 'fast_grow']
 }
@@ -237,5 +240,5 @@ export interface DisplayItem {
 // --- Database Document Type ---
 export interface GameDataDocument {
     playerState: PlayerState;
-    // Add other systems to save here later, e.g., farm, production
+    updatedAt?: any; // For Firestore serverTimestamp
 }

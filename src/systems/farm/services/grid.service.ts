@@ -123,7 +123,7 @@ export class GridService {
       }
   }
 
-  confirmExpansion() {
+  async confirmExpansion() {
       if (!this.canAffordExpansion() || !this.expansionPreview()) return;
       const cost = this.expansionCost();
       const tilesToUnlock = this.expansionPreview()!.tiles;
@@ -134,7 +134,7 @@ export class GridService {
           coins: s!.coins - cost,
           expansionsPurchased: s!.expansionsPurchased + 1,
       }));
-      this.gameStateService.saveStateImmediately();
+      await this.gameStateService.saveStateImmediately();
 
       this.tiles.update(currentTiles => 
           currentTiles.map(t => tileIdsToUnlock.has(t.id) ? { ...t, state: 'free_space' } : t)
@@ -147,9 +147,15 @@ export class GridService {
       this.expansionPreview.set(null);
   }
 
-  plantCrop(tileId: number, cropId: string) {
+  async plantCrop(tileId: number, cropId: string) {
     const crop = this.cropService.getCrop(cropId);
     if (!crop || this.gameStateService.state()!.coins < crop.plantCost) return;
+
+    const currentSeason = this.gameClockService.currentSeason();
+    if (!this.cropService.isCropInSeason(cropId, currentSeason)) {
+        console.warn(`Attempted to plant ${cropId} which is out of season.`);
+        return;
+    }
 
     this.gameStateService.state.update(s => ({...s!, coins: s!.coins - crop.plantCost}));
     this.tiles.update(tiles => tiles.map(t => 
@@ -163,11 +169,11 @@ export class GridService {
     if (playerState && !playerState.milestones?.hasPlantedFirstCrop) {
         this.observabilityService.logEvent('first_plant', { cropId });
         this.gameStateService.state.update(s => ({ ...s!, milestones: { ...s!.milestones, hasPlantedFirstCrop: true } }));
-        this.gameStateService.saveStateImmediately();
+        await this.gameStateService.saveStateImmediately();
     }
   }
 
-  harvestPlot(tileId: number) {
+  async harvestPlot(tileId: number) {
       const tile = this.tiles().find(t => t.id === tileId);
       if (!tile || !tile.cropId) return;
 
@@ -184,7 +190,7 @@ export class GridService {
           if (playerState && !playerState.milestones?.hasHarvestedFirstCrop) {
               this.observabilityService.logEvent('first_harvest', { cropId: harvestedCropId });
               this.gameStateService.state.update(s => ({ ...s!, milestones: { ...s!.milestones, hasHarvestedFirstCrop: true } }));
-              this.gameStateService.saveStateImmediately();
+              await this.gameStateService.saveStateImmediately();
           }
       }
   }

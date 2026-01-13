@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { GameStateService } from '../../../player/services/game-state.service';
 import { ItemService } from '../../../../shared/services/item.service';
 import { MarketService } from '../../../market/services/market.service';
+import { TutorialService } from '../../../tutorial/services/tutorial.service';
 
 interface DisplayItem {
     id: string;
@@ -25,6 +26,7 @@ export class InventoryPageComponent {
   gameStateService = inject(GameStateService);
   itemService = inject(ItemService);
   marketService = inject(MarketService);
+  tutorialService = inject(TutorialService);
 
   playerState = this.gameStateService.state;
   currentStorage = this.gameStateService.currentStorage;
@@ -60,16 +62,19 @@ export class InventoryPageComponent {
     return items.sort((a, b) => a.name.localeCompare(b.name));
   });
 
-  sellItem(itemId: string, quantity: number) {
+  async sellItem(itemId: string, quantity: number) {
     const item = this.inventoryItems().find(i => i.id === itemId);
     if (!item) return;
-    this.gameStateService.sellFromInventory(itemId, quantity, item.sellPrice);
+    await this.gameStateService.sellFromInventory(itemId, quantity, item.sellPrice);
   }
 
-  sellAll(itemId: string) {
+  async sellAll(itemId: string) {
       const item = this.inventoryItems().find(i => i.id === itemId);
       if (item) {
-          this.sellItem(itemId, item.quantity);
+          await this.sellItem(itemId, item.quantity);
+          if (itemId === 'wheat') {
+              this.tutorialService.triggerAction('tutorial-sell-wheat');
+          }
       }
   }
 }

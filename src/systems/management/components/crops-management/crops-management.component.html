@@ -88,6 +88,18 @@
             <label class="block text-sm font-medium text-slate-300 mb-1">Balance Tags (comma-separated)</label>
             <input formControlName="balanceTags" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white">
         </div>
+        
+        <div class="p-4 bg-slate-900/50 rounded-lg" formGroupName="seasons">
+            <h3 class="font-semibold text-slate-300 mb-2">Plantable Seasons (if none or all are selected, it's plantable year-round)</h3>
+            <div class="flex space-x-6">
+                @for(season of ['Spring', 'Summer', 'Autumn', 'Winter']; track season) {
+                    <label class="flex items-center space-x-2 text-white">
+                        <input type="checkbox" [formControlName]="season" class="rounded bg-slate-600 border-slate-500 text-green-500 focus:ring-green-600">
+                        <span>{{ season }}</span>
+                    </label>
+                }
+            </div>
+        </div>
 
         <div class="p-4 bg-slate-900/50 rounded-lg" formGroupName="seasonModifiers">
             <h3 class="font-semibold text-slate-300 mb-2">Season Growth Modifiers (1.0 = normal)</h3>

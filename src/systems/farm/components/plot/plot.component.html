@@ -1,6 +1,7 @@
 <div 
   class="relative aspect-square transition-all duration-200 group transform"
-  (click)="onClick($event)">
+  (click)="onClick($event)"
+  [attr.data-tutorial-id]="isTutorialTarget() ? 'tutorial-plot' : null">
 
   @switch (plot().state) {
     @case ('locked') {

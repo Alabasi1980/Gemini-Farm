@@ -1,0 +1,30 @@
+@if (step(); as currentStep) {
+  <div class="fixed inset-0 z-[9997]">
+      <!-- Highlighter Box -->
+      <div [style]="highlightStyle()"></div>
+
+      <!-- Tutorial Text Box -->
+      <div 
+        data-tutorial-id="tutorial-box"
+        class="fixed bottom-10 left-1/2 -translate-x-1/2 w-full max-w-lg bg-slate-800 border-2 border-purple-500 rounded-lg p-6 shadow-2xl animate-fade-in-up text-center z-[9999]">
+        <p class="text-slate-200 text-lg leading-relaxed">{{ currentStep.text }}</p>
+
+        <div class="mt-6 flex justify-between items-center">
+          <button (click)="skip()" class="px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-700 rounded-md transition-colors">
+            Skip Tutorial
+          </button>
+          
+          @if (!currentStep.isActionRequired || isPlayerActionPending()) {
+            <button (click)="next()" class="px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors">
+              {{ currentStep.step >= 10 ? 'Finish' : 'Next' }}
+            </button>
+          } @else {
+             <div class="px-8 py-3 bg-purple-800 text-purple-400 font-bold rounded-lg transition-colors opacity-70">
+                Waiting for action...
+            </div>
+          }
+
+        </div>
+      </div>
+  </div>
+}

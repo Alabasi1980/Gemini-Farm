@@ -34,7 +34,8 @@
                   (click)="changeTab(item.id)"
                   class="p-3 rounded-lg transition-colors duration-200 w-full relative group"
                   [class]="activeTab() === item.id ? 'bg-green-100 text-green-700' : 'text-slate-500 hover:bg-green-50 hover:text-green-600'"
-                  [title]="item.label">
+                  [title]="item.label"
+                  [attr.data-tutorial-id]="item.id === 'Inventory' ? 'tutorial-inventory-tab' : (item.id === 'Shop' ? 'tutorial-shop-tab' : null)">
                   @if (activeTab() === item.id) {
                     <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-green-500 rounded-r-full"></div>
                   }
@@ -84,13 +85,58 @@
             }
           </main>
           
+          @if (!isTutorialCompleted()) {
+            <app-tutorial-guide></app-tutorial-guide>
+          }
+          
           <!-- Global Overlays / Tickers -->
           <app-market-ticker></app-market-ticker>
+
+          <!-- Save Status Indicator -->
+          @if (saveStatus() !== 'idle') {
+            <div class="fixed bottom-4 right-4 z-50 flex items-center space-x-2 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 shadow-lg"
+              [class]="{
+                'bg-slate-700 text-slate-300': saveStatus() === 'saving',
+                'bg-green-600 text-white animate-pulse-once': saveStatus() === 'saved',
+                'bg-red-600 text-white': saveStatus() === 'failed'
+              }">
+              @switch (saveStatus()) {
+                @case ('saving') {
+                  <div class="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>
+                  <span>Saving...</span>
+                }
+                @case ('saved') {
+                  <span>✓</span>
+                  <span>Game Saved</span>
+                }
+                @case ('failed') {
+                  <span>✗</span>
+                  <span>Save Failed</span>
+                }
+              }
+            </div>
+          }
         </div>
       }
     }
   }
 }
+
+<!-- Sync Conflict Modal -->
+@if (conflictDetected()) {
+  <div class="fixed inset-0 bg-black/80 z-[10000] flex flex-col items-center justify-center backdrop-blur-sm">
+    <div class="bg-slate-800 border-2 border-red-500 rounded-lg p-8 shadow-2xl text-center w-full max-w-lg animate-scale-in">
+      <h2 class="text-3xl font-bold text-red-400">Sync Conflict</h2>
+      <p class="text-slate-300 mt-4 text-lg">
+        Your game has been updated in another tab or device. To prevent data loss, please reload the game to get the latest progress.
+      </p>
+      <button (click)="reloadPage()" class="mt-8 px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors">
+        Reload Game
+      </button>
+    </div>
+  </div>
+}
+
 
 <style>
   @keyframes loading-bar {
@@ -99,5 +145,12 @@
   }
   .animate-loading-bar {
     animation: loading-bar 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse-once {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.95; }
+  }
+  .animate-pulse-once {
+    animation: pulse-once 0.5s ease-in-out;
   }
 </style>

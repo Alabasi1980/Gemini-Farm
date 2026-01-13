@@ -1,5 +1,5 @@
 import { Injectable, computed, inject } from '@angular/core';
-import { Crop } from '../../../shared/types/game.types';
+import { Crop, Season } from '../../../shared/types/game.types';
 import { ContentService } from '../../../shared/services/content.service';
 
 @Injectable({
@@ -18,5 +18,14 @@ export class CropService {
 
   getCrop(id: string): Crop | undefined {
     return this.crops().get(id);
+  }
+
+  isCropInSeason(cropId: string, season: Season): boolean {
+    const crop = this.getCrop(cropId);
+    // If crop doesn't exist, or has no specific seasons, it's plantable year-round as a fallback.
+    if (!crop || !crop.seasons || crop.seasons.length === 0) {
+      return true;
+    }
+    return crop.seasons.includes(season);
   }
 }

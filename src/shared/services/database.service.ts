@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { initializeApp, FirebaseApp } from 'firebase/app';
-import { getFirestore, doc, setDoc, getDoc, Firestore, DocumentData, collection, getDocs, updateDoc, serverTimestamp, addDoc, deleteDoc, query, orderBy, limit } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, getDoc, Firestore, DocumentData, collection, getDocs, updateDoc, serverTimestamp, addDoc, deleteDoc, query, orderBy, limit, runTransaction } from 'firebase/firestore';
 import { firebaseConfig } from '../../environments/firebase.config';
 import { AdminAuditLog, AnalyticsEvent, ClientErrorLog, GameDataDocument, PlayerState } from '../types/game.types';
 
@@ -28,13 +28,35 @@ export class DatabaseService {
 
   // --- Game Data ---
 
-  async saveGameData(userId: string, data: GameDataDocument): Promise<void> {
+  async saveGameData(userId: string, data: Partial<GameDataDocument>, lastKnownTimestamp: any): Promise<void> {
     try {
-      const playerDocRef = doc(this.db, 'players', userId);
-      await setDoc(playerDocRef, data, { merge: true });
-    } catch (error) {
+      await runTransaction(this.db, async (transaction) => {
+        const playerDocRef = doc(this.db, 'players', userId);
+        const playerDoc = await transaction.get(playerDocRef);
+
+        if (playerDoc.exists()) {
+            const serverTimestamp = playerDoc.data().updatedAt;
+            // Only perform check if we have a timestamp from both client and server
+            if (lastKnownTimestamp && serverTimestamp && serverTimestamp.toMillis() > lastKnownTimestamp.toMillis()) {
+                // The document on the server is newer than the one we loaded.
+                // This indicates a conflict from another session.
+                throw new Error('STATE_CONFLICT');
+            }
+        }
+
+        const dataToSave = {
+            ...data,
+            updatedAt: serverTimestamp() // Use serverTimestamp within the transaction
+        };
+        transaction.set(playerDocRef, dataToSave, { merge: true });
+      });
+    } catch (error: any) {
+      // Re-throw the specific conflict error or a generic one
+      if (error.message === 'STATE_CONFLICT') {
+        throw error;
+      }
       console.error("Error saving game data to Firestore:", error);
-      throw error;
+      throw new Error("Failed to save game data.");
     }
   }
 

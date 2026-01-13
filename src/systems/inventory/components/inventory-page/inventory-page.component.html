@@ -40,7 +40,8 @@
             </button>
             <button 
              (click)="sellAll(item.id)"
-              class="flex-1 px-4 py-2 text-sm rounded-md bg-green-600/80 hover:bg-green-600 text-white font-semibold transition-colors">
+              class="flex-1 px-4 py-2 text-sm rounded-md bg-green-600/80 hover:bg-green-600 text-white font-semibold transition-colors"
+              [attr.data-tutorial-id]="item.id === 'wheat' ? 'tutorial-sell-wheat' : null">
               Sell All ({{ item.quantity * item.sellPrice }})
             </button>
           </div>

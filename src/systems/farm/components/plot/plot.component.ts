@@ -5,6 +5,7 @@ import { FarmService } from '../../services/farm.service';
 import { CropService } from '../../services/crop.service';
 import { GameClockService } from '../../../world/services/game-clock.service';
 import { GridService } from '../../services/grid.service';
+import { TutorialService } from '../../../tutorial/services/tutorial.service';
 
 @Component({
   selector: 'app-plot', 
@@ -19,6 +20,7 @@ export class PlotComponent {
   gridService = inject(GridService);
   cropService = inject(CropService);
   gameClockService = inject(GameClockService);
+  tutorialService = inject(TutorialService);
   
   plotInfo = computed(() => {
     this.gameClockService.gameTick(); 
@@ -59,8 +61,31 @@ export class PlotComponent {
     return { growthPercent, asset: currentAsset, isReady };
   });
 
+  isTutorialTarget = computed(() => {
+    const step = this.tutorialService.currentStep();
+    const plot = this.plot();
+    if (!step || (step.step !== 1 && step.step !== 4)) return false;
+    
+    // Target the first available empty plot for step 1
+    if (step.step === 1 && plot.state === 'empty_plot') {
+       const firstEmptyId = this.gridService.tiles().find(t => t.state === 'empty_plot')?.id;
+       return plot.id === firstEmptyId;
+    }
+    
+    // Target the first ready-to-harvest plot for step 4
+    if (step.step === 4 && this.plotInfo().isReady) {
+       const firstReadyId = this.gridService.harvestablePlots()[0]?.id;
+       return plot.id === firstReadyId;
+    }
+    
+    return false;
+  });
+
   onClick(event: MouseEvent) {
     event.stopPropagation();
+    if (this.isTutorialTarget()) {
+        this.tutorialService.triggerAction('tutorial-plot');
+    }
     const tile = this.plot();
     switch(tile.state) {
       case 'locked':

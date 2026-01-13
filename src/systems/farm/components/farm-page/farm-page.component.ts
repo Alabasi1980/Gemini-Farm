@@ -63,10 +63,10 @@ export class FarmPageComponent {
     this.farmService.closePicker();
   }
 
-  onRecipeSelected(recipeId: string) {
+  async onRecipeSelected(recipeId: string) {
       const factoryId = this.showRecipePicker();
       if (factoryId !== null) {
-          this.factoryService.startProduction(factoryId, recipeId);
+          await this.factoryService.startProduction(factoryId, recipeId);
       }
       this.farmService.closeRecipePicker();
   }

@@ -7,6 +7,7 @@ import { AnimalService } from '../../services/animal.service';
 import { FactoryService } from '../../../production/services/factory.service';
 import { DragDropService } from '../../services/drag-drop.service';
 import { GameClockService } from '../../../world/services/game-clock.service';
+import { TutorialService } from '../../../tutorial/services/tutorial.service';
 
 @Component({
   selector: 'app-placeable-object',
@@ -34,6 +35,7 @@ export class PlaceableObjectComponent {
   factoryService = inject(FactoryService);
   dragDropService = inject(DragDropService);
   gameClockService = inject(GameClockService);
+  tutorialService = inject(TutorialService);
   elementRef = inject(ElementRef);
   
   gameTick = this.gameClockService.gameTick;
@@ -44,6 +46,12 @@ export class PlaceableObjectComponent {
   isSelected = computed(() => this.farmService.selectedObjectInstanceId() === this.object().instanceId);
   isAnimalBuilding = computed(() => this.item()?.type === 'animal_housing');
   isFactory = computed(() => this.item()?.type === 'factory');
+
+  isTutorialTarget = computed(() => {
+    const step = this.tutorialService.currentStep();
+    const object = this.object();
+    return step?.step === 9 && object.itemId === 'chicken_coop';
+  });
 
   animalProductionInfo = computed(() => {
     this.gameTick(); // Rerun on tick

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormArray, FormGroup } from '@angular/forms';
 import { ContentService } from '../../../../shared/services/content.service';
 import { ContentAdminService } from '../../services/content-admin.service';
-import { Crop, CropGrowthStage } from '../../../../shared/types/game.types';
+import { Crop, CropGrowthStage, Season } from '../../../../shared/types/game.types';
 
 @Component({
   selector: 'app-crops-management',
@@ -32,10 +32,21 @@ export class CropsManagementComponent {
   openForm(crop: Crop | null = null) {
     this.editingCrop.set(crop);
     if (crop) {
+      const seasonsValue = { Spring: false, Summer: false, Autumn: false, Winter: false };
+      // If seasons array is undefined, null, or empty, it means all seasons are plantable.
+      if (!crop.seasons || crop.seasons.length === 0) {
+          Object.keys(seasonsValue).forEach(k => (seasonsValue as any)[k] = true);
+      } else {
+          for (const season of crop.seasons) {
+              seasonsValue[season] = true;
+          }
+      }
+
       this.cropForm.patchValue({
         ...crop,
         growthTime: crop.growthTime / 1000, // ms to seconds
         balanceTags: crop.balanceTags.join(', '),
+        seasons: seasonsValue,
       });
       this.growthStages.clear();
       
@@ -56,7 +67,8 @@ export class CropsManagementComponent {
         sellPrice: 0,
         growthTime: 10,
         unlockLevel: 1,
-        seasonModifiers: { Spring: 1.0, Summer: 1.0, Autumn: 1.0, Winter: 1.0 }
+        seasonModifiers: { Spring: 1.0, Summer: 1.0, Autumn: 1.0, Winter: 1.0 },
+        seasons: { Spring: true, Summer: true, Autumn: true, Winter: true },
       });
       this.growthStages.clear();
       this.addGrowthStage();
@@ -103,6 +115,10 @@ export class CropsManagementComponent {
         };
     });
     
+    const selectedSeasons = Object.entries(formValue.seasons)
+      .filter(([, value]) => value)
+      .map(([key]) => key as Season);
+
     const cropData: Crop = {
       id: formValue.id,
       name: formValue.name,
@@ -113,6 +129,8 @@ export class CropsManagementComponent {
       unlockLevel: formValue.unlockLevel,
       balanceTags: formValue.balanceTags.split(',').map((t: string) => t.trim()).filter(Boolean),
       seasonModifiers: formValue.seasonModifiers,
+      // If all 4 seasons are selected, treat as year-round by making the array empty.
+      seasons: selectedSeasons.length === 4 ? [] : selectedSeasons,
       growthStages: newGrowthStages,
     };
 
@@ -153,6 +171,12 @@ export class CropsManagementComponent {
         Summer: [1.0, Validators.required],
         Autumn: [1.0, Validators.required],
         Winter: [1.0, Validators.required],
+      }),
+      seasons: this.fb.group({
+        Spring: [true],
+        Summer: [true],
+        Autumn: [true],
+        Winter: [true],
       }),
       growthStages: this.fb.array([], Validators.required),
     });
