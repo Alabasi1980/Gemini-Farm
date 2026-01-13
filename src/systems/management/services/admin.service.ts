@@ -30,7 +30,8 @@ export class AdminService {
 
             const combinedData: PlayerAdminView[] = players
                 .map(p => {
-                    const user = usersMap.get(p.uid);
+                    // FIX: Cast the user from the map to correctly access its properties.
+                    const user = usersMap.get(p.uid) as { email: string; role: 'player' | 'admin' };
                     if (!user) return null; // Player data without a user profile
                     return {
                         uid: p.uid,

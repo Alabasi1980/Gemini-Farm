@@ -51,7 +51,8 @@ export class FactoryService {
                     if (typedState.queue.length > 0 && !typedState.outputReady) {
                         const job = typedState.queue[0];
                         const recipe = this.getRecipe(job.recipeId);
-                        const factory = this.getFactoryConfig(id);
+                        // FIX: Cast id to number as it's being inferred as unknown from the map iterator.
+                        const factory = this.getFactoryConfig(id as number);
                         if (recipe && factory) {
                             const duration = recipe.duration / factory.speedMultiplier;
                             const timeElapsed = Date.now() - job.startTime;

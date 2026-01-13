@@ -28,7 +28,8 @@ export class CommunityService {
 
             const combinedData = players
                 .map(p => {
-                    const user = usersMap.get(p.uid);
+                    // FIX: Cast the user from the map to correctly access its properties.
+                    const user = usersMap.get(p.uid) as { email: string };
                     if (!user || !p.playerState) return null;
                     return {
                         name: user.email,

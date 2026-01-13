@@ -29,12 +29,11 @@ export class GameStateService {
   currentStorage = computed(() => {
     const currentInventory = this.state()?.inventory;
     if (!currentInventory) return 0;
-    return Object.values(currentInventory).reduce((acc, quantity) => acc + quantity, 0);
+    // FIX: Add explicit types to the reduce function's parameters to avoid them being inferred as 'unknown'.
+    return Object.values(currentInventory).reduce((acc: number, quantity: number) => acc + quantity, 0);
   });
 
-  async initialize(): Promise<void> {
-    await this.loadInitialContent();
-    
+  constructor() {
     // This effect reacts to user login/logout
     effect(() => {
         const userId = this.authService.userId();
@@ -57,6 +56,10 @@ export class GameStateService {
             this.dbService.saveGameData(currentUserId, { playerState: currentState });
         }
     });
+  }
+
+  async initialize(): Promise<void> {
+    await this.loadInitialContent();
   }
 
   private async loadInitialContent() {

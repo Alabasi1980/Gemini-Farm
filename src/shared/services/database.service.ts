@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { initializeApp, FirebaseApp } from 'firebase/app';
-import { getFirestore, doc, setDoc, getDoc, Firestore, DocumentData, collection, getDocs, updateDoc, serverTimestamp, addDoc } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, getDoc, Firestore, DocumentData, collection, getDocs, updateDoc, serverTimestamp, addDoc, deleteDoc } from 'firebase/firestore';
 import { firebaseConfig } from '../../environments/firebase.config';
 import { GameDataDocument, PlayerState } from '../types/game.types';
 
@@ -57,14 +57,13 @@ export class DatabaseService {
 
   // --- Game Content (Read & Write) ---
 
-  async getCollection<T>(collectionName: string): Promise<T[]> {
+  async getCollection<T>(collectionPath: string): Promise<T[]> {
     try {
-      const contentVersionDoc = 'live';
-      const colRef = collection(this.db, 'content', contentVersionDoc, collectionName);
+      const colRef = collection(this.db, collectionPath);
       const snapshot = await getDocs(colRef);
       return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as T));
     } catch (error) {
-      console.error(`Error fetching collection "${collectionName}":`, error);
+      console.error(`Error fetching collection "${collectionPath}":`, error);
       throw error;
     }
   }
@@ -87,6 +86,16 @@ export class DatabaseService {
     } catch (error) {
       console.error(`Error adding document to ${collectionPath}:`, error);
       throw error;
+    }
+  }
+
+  async deleteDocumentFromCollection(collectionPath: string, docId: string): Promise<void> {
+    try {
+        const docRef = doc(this.db, collectionPath, docId);
+        await deleteDoc(docRef);
+    } catch (error) {
+        console.error(`Error deleting document ${docId} from ${collectionPath}:`, error);
+        throw error;
     }
   }
 

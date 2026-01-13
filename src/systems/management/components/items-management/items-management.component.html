@@ -1,0 +1,177 @@
+<div class="space-y-4">
+  <div class="flex justify-between items-center">
+    <h2 class="text-2xl font-semibold text-slate-400">Placeable Item Definitions</h2>
+    <button (click)="openForm()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors">
+      Create New Item
+    </button>
+  </div>
+
+  <div class="bg-slate-800 border border-slate-700 rounded-lg shadow-lg overflow-hidden">
+    <table class="min-w-full divide-y divide-slate-700">
+      <thead class="bg-slate-900/50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">ID</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Name</th>
+          <th class="px-6 py-3 text-center text-xs font-medium text-slate-400 uppercase tracking-wider">Asset</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Type</th>
+          <th class="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">Cost</th>
+          <th class="px-6 py-3 text-center text-xs font-medium text-slate-400 uppercase tracking-wider">Size</th>
+          <th class="px-6 py-3 text-center text-xs font-medium text-slate-400 uppercase tracking-wider">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-700/50">
+        @for (item of items(); track item.id) {
+          <tr class="hover:bg-slate-700/30 transition-colors duration-150">
+            <td class="px-6 py-4 whitespace-nowrap font-mono text-sm text-slate-300">{{ item.id }}</td>
+            <td class="px-6 py-4 whitespace-nowrap font-semibold text-white">{{ item.name }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-center text-2xl">{{ item.asset }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400 capitalize">{{ item.type.replace('_', ' ') }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-right font-mono text-yellow-400">{{ item.cost | number }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-center font-mono text-sm text-slate-300">{{ item.width }}x{{ item.height }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-center">
+              <button (click)="openForm(item)" class="text-blue-400 hover:text-blue-300 transition-colors">Edit</button>
+              <button (click)="requestDelete(item)" class="ml-4 text-red-400 hover:text-red-300 transition-colors">Delete</button>
+            </td>
+          </tr>
+        } @empty {
+           <tr>
+             <td colspan="7" class="text-center py-8 text-slate-400">No items found in the database. Create one to get started!</td>
+           </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Item Form Modal -->
+@if(isFormOpen()) {
+  <div class="fixed inset-0 bg-black/70 z-30 flex items-center justify-center" (click)="closeForm()">
+    <div class="bg-slate-800 border-2 border-slate-600 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col" (click)="$event.stopPropagation()">
+      <h2 class="text-2xl font-bold text-slate-200 p-6 border-b border-slate-700">
+        {{ editingItem() ? 'Edit Item' : 'Create New Item' }}
+      </h2>
+      <form [formGroup]="itemForm" (ngSubmit)="onSubmit()" class="flex-grow overflow-y-auto p-6 space-y-6">
+        
+        <!-- Basic Info -->
+        <div class="p-4 bg-slate-900/50 rounded-lg space-y-4">
+            <h3 class="font-semibold text-slate-300 -mb-2">Basic Information</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">ID (lowercase_snake_case)</label>
+                    <input formControlName="id" [readOnly]="editingItem()" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white read-only:bg-slate-800">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Name</label>
+                    <input formControlName="name" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white">
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-300 mb-1">Description</label>
+                <textarea formControlName="description" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white" rows="2"></textarea>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Item Type</label>
+                    <select formControlName="type" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white">
+                        @for(type of itemTypes; track type) {
+                            <option [value]="type">{{ type.replace('_', ' ') | titlecase }}</option>
+                        }
+                    </select>
+                </div>
+                 <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Asset (Emoji)</label>
+                    <input formControlName="asset" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white">
+                </div>
+                 <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Cost</label>
+                    <input type="number" formControlName="cost" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Unlock Level</label>
+                    <input type="number" formControlName="unlockLevel" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white">
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                 <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Width (plots)</label>
+                    <input type="number" formControlName="width" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Height (plots)</label>
+                    <input type="number" formControlName="height" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white">
+                </div>
+            </div>
+        </div>
+
+        <!-- Animal Housing Fields -->
+        @if (itemForm.get('type')?.value === 'animal_housing') {
+            <div class="p-4 bg-slate-900/50 rounded-lg space-y-4 animate-fade-in-down">
+                <h3 class="font-semibold text-slate-300 -mb-2">Animal Housing Properties</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Produces Product ID</label>
+                        <input formControlName="producesProductId" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Production Time (sec)</label>
+                        <input type="number" formControlName="productionTime" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white">
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Factory Fields -->
+        @if (itemForm.get('type')?.value === 'factory') {
+            <div class="p-4 bg-slate-900/50 rounded-lg space-y-4 animate-fade-in-down">
+                <h3 class="font-semibold text-slate-300 -mb-2">Factory Properties</h3>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Recipe IDs (comma-separated)</label>
+                    <input formControlName="recipeIds" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white">
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Base Queue Size</label>
+                        <input type="number" formControlName="baseQueueSize" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Base Upgrade Cost</label>
+                        <input type="number" formControlName="upgradeCost" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Speed/Level (e.g., 0.1)</label>
+                        <input type="number" step="0.01" formControlName="speedPerLevel" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white">
+                    </div>
+                </div>
+            </div>
+        }
+
+      </form>
+      <div class="p-4 bg-slate-900/50 border-t border-slate-700 flex justify-end space-x-4">
+        <button (click)="closeForm()" class="px-6 py-2 rounded-lg font-bold bg-slate-600 hover:bg-slate-700 text-white transition-colors">
+          Cancel
+        </button>
+        <button (click)="onSubmit()" [disabled]="itemForm.invalid" class="px-6 py-2 rounded-lg font-bold bg-blue-600 hover:bg-blue-700 text-white transition-colors disabled:bg-slate-600 disabled:cursor-not-allowed">
+          Save Item
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Delete Confirmation Modal -->
+@if(isDeleteModalOpen() && itemToDelete(); as item) {
+  <div class="fixed inset-0 bg-black/70 z-40 flex items-center justify-center" (click)="closeDeleteModal()">
+    <div class="bg-slate-800 border-2 border-red-500 rounded-lg p-6 shadow-2xl animate-scale-in text-center w-full max-w-sm" (click)="$event.stopPropagation()">
+        <h2 class="text-2xl font-bold text-red-300">Confirm Deletion</h2>
+        <p class="text-slate-400 mt-2">Are you sure you want to delete the item <strong class="text-white">{{ item.name }}</strong>? This action cannot be undone.</p>
+        <div class="flex space-x-4 mt-6">
+            <button (click)="closeDeleteModal()" class="w-full px-6 py-3 rounded-lg font-bold bg-slate-600 hover:bg-slate-700 text-white transition-colors">
+                Cancel
+            </button>
+            <button (click)="confirmDelete()" class="w-full px-6 py-3 rounded-lg font-bold text-white bg-red-600 hover:bg-red-700 transition-colors">
+                Delete
+            </button>
+        </div>
+    </div>
+  </div>
+}

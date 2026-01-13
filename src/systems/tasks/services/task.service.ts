@@ -1,5 +1,5 @@
 import { Injectable, signal, inject, effect } from '@angular/core';
-import { GameTask, TaskState } from '../../../shared/types/game.types';
+import { GameTask, PlaceableItem, TaskState } from '../../../shared/types/game.types';
 import { GameStateService } from '../../player/services/game-state.service';
 import { AiTaskService, PlayerTaskContext } from './ai-task.service';
 import { ObjectService } from '../../farm/services/object.service';
@@ -84,8 +84,9 @@ export class TaskService {
 
             const ownedFactories = this.placementService.placedObjects()
                 .map(obj => this.objectService.getItem(obj.itemId))
-                .filter(item => item?.type === 'factory')
-                .map(item => item!.id);
+                // FIX: Use a proper type guard to filter and narrow the type of items.
+                .filter((item): item is PlaceableItem => !!item && item.type === 'factory')
+                .map(item => item.id);
 
             const context: PlayerTaskContext = {
                 level: playerState.level,
