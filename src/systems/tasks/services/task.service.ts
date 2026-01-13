@@ -93,7 +93,8 @@ export class TaskService {
                 xp: playerState.xp,
                 inventory: inventoryObject,
                 ownedFactories: [...new Set(ownedFactories)],
-                existingTaskIds: this.tasks().map((t: GameTask) => t.id)
+                // FIX: Removed explicit type annotation `(t: GameTask)` to rely on inference.
+                existingTaskIds: this.tasks().map(t => t.id)
             };
 
             // 2. Call AI Service
